@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Shaders\transformable.frag" />
+    <None Remove="Shaders\transformable.vert" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Shaders\transformable.frag">
+      <LogicalName>Shaders.Transformable.Frag</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Shaders\transformable.vert">
+      <LogicalName>Shaders.Transformable.Vert</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ExCSS-Core" Version="4.0.2" />
+    <PackageReference Include="OpenTK.NetStandard" Version="1.0.4" />
+    <PackageReference Include="SkiaSharp" Version="1.68.0" />
+    <PackageReference Include="System.Reactive" Version="4.1.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Helpers\" />
+  </ItemGroup>
+
+</Project>
