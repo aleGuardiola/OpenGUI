@@ -1,7 +1,7 @@
 ﻿using ExCSS;
-using ModelProviderVisualizer;
 using OpenGui.Controls;
 using OpenGui.GUICore;
+using OpenGui.Values;
 using OpenTK;
 using System;
 using System.Linq;
@@ -26,6 +26,8 @@ namespace TestNetCore
             view.X =  0f;
             view.Y = 0f;
             view.Z = 0f;
+
+            view.Background = new DrawableColor(System.Drawing.Color.Green);
 
             guiCoreWindow.Root = view;
             windows.Run();

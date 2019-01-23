@@ -111,8 +111,8 @@ namespace OpenGui.GUICore
             //enable depth test for 3d rendering
             GL.Enable(EnableCap.DepthTest);
             //enable blend for alpha texture
-            GL.Enable(EnableCap.Blend);
-            GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.DstAlpha);
+            //GL.Enable(EnableCap.Blend);
+            //GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.DstAlpha);
         }
 
         //Setup the camera

@@ -1,4 +1,5 @@
-﻿using OpenGui.GUICore;
+﻿using OpenGui.Core;
+using OpenGui.GUICore;
 using OpenTK;
 using SkiaSharp;
 using System;
@@ -10,7 +11,7 @@ namespace OpenGui.Controls
     /// <summary>
     /// The most low level block view.
     /// </summary>
-    public class LowLevelView : IDrawableGLObject
+    public class LowLevelView : ReactiveObject, IDrawableGLObject
     {
         Guid _uniqueId;
         ViewTransformableObject _transformableObject;
@@ -24,6 +25,14 @@ namespace OpenGui.Controls
         float _width;
         float _height;
         float _depth;
+
+        //last rendered values
+        bool forzeDraw = false;
+        float _lastWidth;
+        float _lastHeight;
+        float _lastDepth;
+
+        float _lastZ;
 
         /// <summary>
         /// Unique id that identify this instance
@@ -110,13 +119,18 @@ namespace OpenGui.Controls
             GLDraw(perspectiveProjection, view);
         }
 
+        protected void ForzeDraw()
+        {
+            forzeDraw = true;
+        }
+
         /// <summary>
         /// Draw the texture to show in this view
         /// </summary>
         /// <param name="canvas">The canvas to draw the texture</param>
         protected virtual void DrawTexture(SKCanvas canvas, int width, int height)
         {
-            canvas.Clear(SKColors.Transparent);
+            canvas.Clear(SKColors.White);
         }
 
         public void GLDraw(Matrix4 perspectiveProjection, Matrix4 view)
@@ -130,11 +144,38 @@ namespace OpenGui.Controls
 
         //return the texture to draw
         private Texture GetTexture()
-        {
+        {            
             if(!_texture.IsLoaded)
             {
                 _texture.LoadTexture(GetBitmap());
             }
+            else
+            {
+                //if is forzed to draw with same size
+                if(forzeDraw && _width == _lastWidth && _height == _lastHeight)
+                {
+                    _texture.ChangeBitmapSameSize(GetBitmap());
+                }
+                else
+                //check if we have to update the bitmap
+                if(_width > _lastWidth || _height > _lastHeight)
+                {
+                    _texture.ChangeBitmap(GetBitmap());
+                }
+                else
+                {
+                    var newAspectRatio = _width / _height;
+                    var lastAspectRatio = _lastWidth / _lastHeight;
+                    if(newAspectRatio != lastAspectRatio)
+                    {
+                        _texture.ChangeBitmap(GetBitmap());
+                    }
+                }
+            }
+
+            _lastWidth = _width;
+            _lastHeight = _height;
+            forzeDraw = false;
 
             return _texture;
         }
@@ -142,7 +183,7 @@ namespace OpenGui.Controls
         //return the bitmap used by the texture
         private SKBitmap GetBitmap()
         {
-            var bitmap = new SKBitmap(new SKImageInfo((int)_width, (int)_height, SKColorType.Rgba8888));
+            var bitmap = new SKBitmap(new SKImageInfo((int)_width, (int)_height));
             using (var canvas = new SKCanvas(bitmap))
             {
                 DrawTexture(canvas, bitmap.Width, bitmap.Height);

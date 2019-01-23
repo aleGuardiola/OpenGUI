@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using ExCSS;
+using OpenGui.Values;
 using OpenTK;
 using SkiaSharp;
 
@@ -11,13 +12,7 @@ namespace OpenGui.Controls
     {
         string _id;
         string _class;
-        StyleDeclaration _cssStyle;
-
-        public StyleDeclaration Style
-        {
-            get => _cssStyle;
-        }
-
+        
         /// <summary>
         /// The id of this view
         /// </summary>
@@ -36,6 +31,15 @@ namespace OpenGui.Controls
             set => _class = value;
         }
 
+        /// <summary>
+        /// Get or Set the background of the view.
+        /// </summary>
+        public Drawable Background
+        {
+            get => GetValue<Drawable>();
+            set => SetValue<Drawable>(value);
+        }
+
         public View()
         {
             
@@ -48,7 +52,10 @@ namespace OpenGui.Controls
 
         protected override void DrawTexture(SKCanvas canvas, int width, int height)
         {
-            base.DrawTexture(canvas, width, height);
+            if (Background == null)
+                base.DrawTexture(canvas, width, height);
+            else
+                Background.Draw(width, height, canvas);
         }
 
     }
