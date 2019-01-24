@@ -45,11 +45,43 @@ namespace OpenGui.GUICore
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)All.Linear);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)All.Linear);
 
-            GL.TexImage2D(TextureTarget2d.Texture2D, 0, TextureComponentCount.Rgba, bitmap.Width, bitmap.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, bitmap.GetPixels());
+            var p = bitmap.Bytes;
+
+            if (5 == 9)
+            {
+                for (int i = 0; i < p.Length; i += 4)
+                {
+                    p[i] = 0;
+                    p[i + 1] = 255;
+                    p[i + 2] = 123;
+                    p[i + 3] = 100;
+                }
+            }
+
+            switch (bitmap.ColorType)
+            {                
+                case SKColorType.Alpha8:
+                    GL.TexImage2D(TextureTarget2d.Texture2D, 0, TextureComponentCount.Alpha, bitmap.Width, bitmap.Height, 0, PixelFormat.Alpha, PixelType.UnsignedByte, p);
+                    break;
+                case SKColorType.Rgb565:
+                    GL.TexImage2D(TextureTarget2d.Texture2D, 0, TextureComponentCount.Rgb, bitmap.Width, bitmap.Height, 0, PixelFormat.Rgb, PixelType.UnsignedShort, p);
+                    break;
+                case SKColorType.Argb4444:
+                    GL.TexImage2D(TextureTarget2d.Texture2D, 0, TextureComponentCount.Rgba, bitmap.Width, bitmap.Height, 0, PixelFormat.Rgba, PixelType.UnsignedShort4444, p);
+                    break;
+                case SKColorType.Rgba8888:
+                    GL.TexImage2D(TextureTarget2d.Texture2D, 0, TextureComponentCount.Rgba, bitmap.Width, bitmap.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, p);
+                    break;
+                default:
+                    GL.TexImage2D(TextureTarget2d.Texture2D, 0, TextureComponentCount.Rgba, bitmap.Width, bitmap.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, p);
+                    break;
+            }
+
+            
             GL.GenerateMipmap(TextureTarget.Texture2D);
             _isLoaded = true;
         }
-        
+
         /// <summary>
         /// Change the texture data.
         /// </summary>
@@ -86,6 +118,6 @@ namespace OpenGui.GUICore
         public void Dispose()
         {
             GL.DeleteTexture(_textureId);
-        }       
+        }
     }
 }

@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace OpenGui.Values
+namespace OpenGui.Graphics
 {
     /// <summary>
     /// Represent an object that can be draw.

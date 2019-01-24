@@ -4,7 +4,7 @@ using System.Drawing;
 using System.Text;
 using SkiaSharp;
 
-namespace OpenGui.Values
+namespace OpenGui.Graphics
 {
     /// <summary>
     /// Represent a single drawable color
@@ -26,7 +26,7 @@ namespace OpenGui.Values
         public DrawableColor(Color color)
         {
             _color = color;
-            _skColor = new SKColor(color.R, color.G, color.B);
+            _skColor = new SKColor(color.R, color.G, color.B, color.A);
         }
 
         public override void Draw(int width, int height, SKCanvas canvas)

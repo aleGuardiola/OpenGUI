@@ -1,9 +1,8 @@
-﻿using ExCSS;
-using OpenGui.Controls;
+﻿using OpenGui.Controls;
+using OpenGui.Graphics;
 using OpenGui.GUICore;
-using OpenGui.Values;
-using OpenTK;
 using System;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -13,22 +12,21 @@ namespace TestNetCore
     {
         static void Main(string[] args)
         {
-            GameWindow windows = new GameWindow(800, 600);
+            OpenTK.GameWindow windows = new OpenTK.GameWindow(800, 600);
 
             Window guiCoreWindow = new Window(windows);
-            guiCoreWindow.BackgroundColor = OpenTK.Color.Blue;
+            guiCoreWindow.BackgroundColor = OpenTK.Color.Gray;
 
-            var view = new ViewContainer();
+            var view = new ViewContainer();                     
 
             view.Width = 100f;
             view.Height = 100f;
             
-            view.X =  0f;
-            view.Y = 0f;
-            view.Z = 0f;
+            view.Background = new DrawableColor(Color.FromArgb(255, 255, 0, 0));
 
-            view.Background = new DrawableColor(System.Drawing.Color.Green);
-
+            view.MarginTop = 20f;
+            view.MarginLeft = 20f;
+            
             guiCoreWindow.Root = view;
             windows.Run();
 

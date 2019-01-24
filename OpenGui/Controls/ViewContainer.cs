@@ -44,9 +44,5 @@ namespace OpenGui.Controls
         /// <returns>The layout manager.</returns>
         protected abstract ILayoutManager<T> GetLayoutManager();
 
-        public override void Initialize(int maxWidth, int maxHeight)
-        {            
-            base.Initialize(maxWidth, maxHeight);
-        }
     }
 }

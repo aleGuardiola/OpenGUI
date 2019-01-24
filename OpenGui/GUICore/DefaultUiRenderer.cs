@@ -18,7 +18,7 @@ namespace OpenGui.GUICore
 
             //handle input
 
-
+            rootView.Initialize(width, height, 0, 0);
             //render view
             rootView.GLDraw(projection, view, new RectangleF(0, 0, 1000, 1000 ), width, height);
         }
