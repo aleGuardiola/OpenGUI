@@ -4,6 +4,7 @@ using System.Text;
 using ExCSS;
 using OpenGui.Core;
 using OpenGui.Graphics;
+using OpenGui.Values;
 using OpenTK;
 using SkiaSharp;
 
@@ -39,6 +40,15 @@ namespace OpenGui.Controls
         {
             get => GetValue<Drawable>();
             set => SetValue<Drawable>(value);
+        }
+
+        /// <summary>
+        /// Get or Set the aligment of the view
+        /// </summary>
+        public Align Align
+        {
+            get => GetValue<Align>();
+            set => SetValue<Align>(value);
         }
 
         /// <summary>
@@ -141,42 +151,17 @@ namespace OpenGui.Controls
             SetValue<float>(nameof(MarginTop), ReactiveObject.LAYOUT_VALUE, 0);
             SetValue<float>(nameof(MarginRight), ReactiveObject.LAYOUT_VALUE, 0);
             SetValue<float>(nameof(MarginLeft), ReactiveObject.LAYOUT_VALUE, 0);
-
-
+            
             SetValue<float>(nameof(PaddingBottom), ReactiveObject.LAYOUT_VALUE, 0);
             SetValue<float>(nameof(PaddingTop), ReactiveObject.LAYOUT_VALUE, 0);
             SetValue<float>(nameof(PaddingRight), ReactiveObject.LAYOUT_VALUE, 0);
             SetValue<float>(nameof(PaddingLeft), ReactiveObject.LAYOUT_VALUE, 0);
+
+            SetValue<Align>(nameof(Align), ReactiveObject.LAYOUT_VALUE, Align.Center);
         }
 
         public override void Initialize(float maxWidth, float maxHeight, float parentX, float parentY)
-        {
-            //calculate relative position value based on margin
-            var actualRelativeX = GetValue<float>(nameof(RelativeX), ReactiveObject.LAYOUT_VALUE);
-            var actualRelativeY = GetValue<float>(nameof(RelativeY), ReactiveObject.LAYOUT_VALUE);
-
-            var distanceLeft = actualRelativeX;
-            var distanceRight = (parentX + maxWidth) - (actualRelativeX + Width);
-            var distanceTop = actualRelativeY;
-            var distanceBottom = (parentY + maxHeight) - (actualRelativeY + Height);
-
-            var marginTopToAdd = MarginTop - distanceTop;
-            var marginRightToAdd = MarginRight - distanceRight;
-            var marginBottomToAdd = MarginBottom - distanceBottom;
-            var marginLeftToAdd = MarginLeft - distanceLeft;
-            marginLeftToAdd = marginLeftToAdd < 0 ? 0 : marginLeftToAdd;
-            marginRightToAdd = marginRightToAdd < 0 ? 0 : marginRightToAdd;
-            marginTopToAdd = marginTopToAdd < 0 ? 0 : marginTopToAdd;
-            marginBottomToAdd = marginBottomToAdd < 0 ? 0 : marginBottomToAdd;
-
-            actualRelativeX += marginLeftToAdd;
-            actualRelativeX -= marginRightToAdd;
-            actualRelativeY += marginTopToAdd;
-            actualRelativeY -= marginBottomToAdd;
-
-            SetValue<float>(nameof(RelativeX), ReactiveObject.LAYOUT_VALUE, actualRelativeX);
-            SetValue<float>(nameof(RelativeY), ReactiveObject.LAYOUT_VALUE, actualRelativeY);
-
+        {            
             //set x and y based on the relative position
             var x = parentX + RelativeX;
             var y = parentY + RelativeY;

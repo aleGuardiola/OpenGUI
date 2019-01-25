@@ -25,7 +25,17 @@ namespace OpenGui.Controls
         float _lastDepth;
 
         float _lastZ;
-                
+        
+        /// <summary>
+        /// Get or set the width used to draw, if not set Width property will be used
+        /// </summary>
+        protected float CalculatedWidth = float.NegativeInfinity;
+
+        /// <summary>
+        /// Get or set the height used to draw, if not set Height property will be used
+        /// </summary>
+        protected float CalculatedHeight = float.NegativeInfinity;
+
         /// <summary>
         /// Unique id that identify this instance
         /// </summary>
@@ -97,6 +107,16 @@ namespace OpenGui.Controls
             
         }
 
+        private float getWidthToRender()
+        {
+            return CalculatedWidth != float.NegativeInfinity ? CalculatedWidth : Width;
+        }
+
+        private float getHeightToRender()
+        {
+            return CalculatedHeight != float.NegativeInfinity ? CalculatedHeight : Height;
+        }
+
         /// <summary>
         /// Draw using open gl context
         /// </summary>
@@ -104,11 +124,11 @@ namespace OpenGui.Controls
         /// <param name="view">The view matrix.</param>
         public virtual void GLDraw(Matrix4 perspectiveProjection, Matrix4 view, RectangleF clipRectangle, int windowWidth, int windowHeight)
         {
+            var viewWidth = getWidthToRender();
+            var viewHeight = getHeightToRender();
             var viewx = X;
             var viewy = -Y;
             var viewz = Z;
-            var viewWidth = Width;
-            var viewHeight = Height;
             var viewDepth = Depth;
 
             var x = (viewx - (windowWidth/2)) + (viewWidth/2.0f);
@@ -142,7 +162,7 @@ namespace OpenGui.Controls
 
         public void GLDraw(Matrix4 perspectiveProjection, Matrix4 view)
         {
-            var texture = GetTexture(Width, Height);
+            var texture = GetTexture(getWidthToRender(), getHeightToRender());
 
             texture.StartUsingTexture();
             _transformableObject.Draw(perspectiveProjection, view);

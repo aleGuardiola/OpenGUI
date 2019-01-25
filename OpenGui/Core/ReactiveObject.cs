@@ -83,6 +83,21 @@ namespace OpenGui.Core
             return (T)property.values[priority];
         }
 
+        public bool TryGetValue<T>(string propertyName, int priority, out T value)
+        {
+            Property property;
+            var exist = _properties.TryGetValue(propertyName, out property);
+
+            value = default(T);
+
+            if (!exist || property.values[priority] == null)
+                return false;
+
+            value = (T)property.values[priority];
+
+            return true;
+        }
+
         /// <summary>
         /// Get observable of the values of specific property.
         /// </summary>

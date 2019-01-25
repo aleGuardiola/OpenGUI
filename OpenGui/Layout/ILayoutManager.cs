@@ -7,6 +7,6 @@ namespace OpenGui.Layout
 {
     public interface ILayoutManager<T> where T : View
     {
-        void Calculate(ViewContainer viewContainer);
+        (float widthToRender, float heightToRender) Calculate(ViewContainer viewContainer, IList<View> children, float parentWidth, float parentHeight);
     }
 }
