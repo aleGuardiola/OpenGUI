@@ -1,6 +1,5 @@
 ﻿using OpenGui.Collection;
 using OpenGui.Core;
-using OpenGui.Layout;
 using OpenGui.Values;
 using OpenTK;
 using System;
@@ -31,9 +30,7 @@ namespace OpenGui.Controls
     }
 
     public abstract class ViewContainer<T> : ViewContainer where T : View
-    {
-        ILayoutManager<T> _layoutManager;
-
+    {        
         /// <summary>
         /// Get the children of this container
         /// </summary>
@@ -44,24 +41,17 @@ namespace OpenGui.Controls
                 
         public ViewContainer()
         {
-            _layoutManager = GetLayoutManager();
+            
         }
-               
-        /// <summary>
-        /// Provide the layout manager that position the children.
-        /// </summary>
-        /// <returns>The layout manager.</returns>
-        protected abstract ILayoutManager<T> GetLayoutManager();
 
-        public override void Initialize(float maxWidth, float maxHeight, float parentX, float parentY)
+        protected override (float measuredWidth, float measuredHeight) OnMesure(float widthSpec, float heightSpec, MeasureSpecMode mode)
         {
-            //calculate the layout
-            var value = _layoutManager.Calculate(this, base.Children, maxWidth, maxHeight);
-            CalculatedWidth = value.widthToRender;
-            CalculatedHeight = value.heightToRender;
-            base.Initialize(maxWidth, maxHeight, parentX, parentY);
+            OnLayout();
+            return base.OnMesure(widthSpec, heightSpec, mode);
         }
 
+        protected abstract void OnLayout();
+        
         public override void GLDraw(Matrix4 perspectiveProjection, Matrix4 view, RectangleF clipRectangle, int windowWidth, int windowHeight)
         {
             //draw each children

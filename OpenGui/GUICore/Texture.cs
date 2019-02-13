@@ -29,7 +29,7 @@ namespace OpenGui.GUICore
 
         public Texture()
         {
-            
+
         }
 
         /// <summary>
@@ -38,6 +38,9 @@ namespace OpenGui.GUICore
         /// <param name="bitmap"></param>
         public void LoadTexture(SKBitmap bitmap)
         {
+            if (_isLoaded)
+                throw new InvalidOperationException("This texture is already initialized");
+
             GL.GenTextures(1, out _textureId);
             GL.BindTexture(TextureTarget.Texture2D, _textureId);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)All.Repeat);
@@ -45,21 +48,21 @@ namespace OpenGui.GUICore
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)All.Linear);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)All.Linear);
 
-            var p = bitmap.Bytes;
+            var p = bitmap.GetPixels();
 
-            if (5 == 9)
-            {
-                for (int i = 0; i < p.Length; i += 4)
-                {
-                    p[i] = 0;
-                    p[i + 1] = 255;
-                    p[i + 2] = 123;
-                    p[i + 3] = 100;
-                }
-            }
+            //if (5 == 9)
+            //{
+            //    for (int i = 0; i < p.Length; i += 4)
+            //    {
+            //        p[i] = 0;
+            //        p[i + 1] = 255;
+            //        p[i + 2] = 123;
+            //        p[i + 3] = 100;
+            //    }
+            //}
 
             switch (bitmap.ColorType)
-            {                
+            {
                 case SKColorType.Alpha8:
                     GL.TexImage2D(TextureTarget2d.Texture2D, 0, TextureComponentCount.Alpha, bitmap.Width, bitmap.Height, 0, PixelFormat.Alpha, PixelType.UnsignedByte, p);
                     break;
@@ -77,9 +80,9 @@ namespace OpenGui.GUICore
                     break;
             }
 
-            
+
             GL.GenerateMipmap(TextureTarget.Texture2D);
-            _isLoaded = true;
+            _isLoaded = true;            
         }
 
         /// <summary>
@@ -89,7 +92,7 @@ namespace OpenGui.GUICore
         public void ChangeBitmap(SKBitmap bitmap)
         {
             GL.BindTexture(TextureTarget.Texture2D, _textureId);
-            GL.TexImage2D(TextureTarget2d.Texture2D, 0, TextureComponentCount.Rgba, bitmap.Width, bitmap.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, bitmap.Bytes);
+            GL.TexImage2D(TextureTarget2d.Texture2D, 0, TextureComponentCount.Rgba, bitmap.Width, bitmap.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, bitmap.GetPixels());
             GL.BindTexture(TextureTarget.Texture2D, 0);
         }
 
@@ -100,7 +103,7 @@ namespace OpenGui.GUICore
         public void ChangeBitmapSameSize(SKBitmap bitmap)
         {
             GL.BindTexture(TextureTarget.Texture2D, _textureId);
-            GL.TexSubImage2D(TextureTarget2d.Texture2D, 0, 0, 0, bitmap.Width, bitmap.Height, PixelFormat.Rgba, PixelType.Byte, bitmap.Bytes);
+            GL.TexSubImage2D(TextureTarget2d.Texture2D, 0, 0, 0, bitmap.Width, bitmap.Height, PixelFormat.Rgba, PixelType.Byte, bitmap.GetPixels());
             GL.BindTexture(TextureTarget.Texture2D, 0);
         }
 

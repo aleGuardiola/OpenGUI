@@ -157,16 +157,60 @@ namespace OpenGui.Controls
             SetValue<float>(nameof(PaddingRight), ReactiveObject.LAYOUT_VALUE, 0);
             SetValue<float>(nameof(PaddingLeft), ReactiveObject.LAYOUT_VALUE, 0);
 
+            SetValue<Drawable>(nameof(Background), ReactiveObject.LAYOUT_VALUE, null);
+
             SetValue<Align>(nameof(Align), ReactiveObject.LAYOUT_VALUE, Align.Center);
         }
 
-        public override void Initialize(float maxWidth, float maxHeight, float parentX, float parentY)
-        {            
-            //set x and y based on the relative position
-            var x = parentX + RelativeX;
-            var y = parentY + RelativeY;
-            SetValue<float>(nameof(X), ReactiveObject.LAYOUT_VALUE, x);
-            SetValue<float>(nameof(Y), ReactiveObject.LAYOUT_VALUE, y);
+        protected override (float measuredWidth, float measuredHeight) OnMesure(float widthSpec, float heightSpec, MeasureSpecMode mode)
+        {
+            var minWidth = MinWidth;
+            var minHeight = MinHeight;
+
+            float width = 0;
+            float height = 0;
+
+            switch (mode)
+            {
+                case MeasureSpecMode.Exactly:
+                    if (!TryGetValue<float>(nameof(Width), ReactiveObject.USER_VALUE, out width))
+                        width = Math.Max(widthSpec, minWidth);
+
+                    if (!TryGetValue<float>(nameof(Height), ReactiveObject.USER_VALUE, out height))
+                        height = Math.Max(heightSpec, minWidth);
+
+                    break;                 
+                case MeasureSpecMode.AtMost:
+
+                    //calculate width
+                    if(!TryGetValue<float>(nameof(Width), ReactiveObject.USER_VALUE, out width))
+                    {
+                        width = Math.Max( Math.Max(PaddingLeft + PaddingRight, Width), minWidth );
+                        if (width > widthSpec)
+                            width = Math.Max(widthSpec, minWidth);
+                    }
+
+                    //calculate height
+                    if (!TryGetValue<float>(nameof(Height), ReactiveObject.USER_VALUE, out height))
+                    {
+                        height = Math.Max(Math.Max(PaddingTop + PaddingBottom, height), minHeight);
+                        if (height > heightSpec)
+                            height = Math.Max(heightSpec, minHeight);
+                    }
+                    break;
+                case MeasureSpecMode.Unspecified:
+
+                    //calculate width
+                    if (!TryGetValue<float>(nameof(Width), ReactiveObject.USER_VALUE, out width))                    
+                        width = Math.Max(Math.Max(PaddingLeft + PaddingRight, Width), minWidth);                   
+
+                    //calculate height
+                    if (!TryGetValue<float>(nameof(Height), ReactiveObject.USER_VALUE, out height))                    
+                        height = Math.Max(Math.Max(PaddingTop + PaddingBottom, height), minHeight);
+                    break;
+            }
+
+            return (width, height);
         }
 
         protected override void DrawTexture(SKCanvas canvas, int width, int height)

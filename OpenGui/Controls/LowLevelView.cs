@@ -1,5 +1,6 @@
 ﻿using OpenGui.Core;
 using OpenGui.GUICore;
+using OpenGui.Values;
 using OpenTK;
 using SkiaSharp;
 using System;
@@ -29,12 +30,20 @@ namespace OpenGui.Controls
         /// <summary>
         /// Get or set the width used to draw, if not set Width property will be used
         /// </summary>
-        protected float CalculatedWidth = float.NegativeInfinity;
+        public float CalculatedWidth
+        {
+            get;
+            private set;
+        }
 
         /// <summary>
         /// Get or set the height used to draw, if not set Height property will be used
         /// </summary>
-        protected float CalculatedHeight = float.NegativeInfinity;
+        public float CalculatedHeight
+        {
+            get;
+            private set;
+        }
 
         /// <summary>
         /// Unique id that identify this instance
@@ -65,9 +74,19 @@ namespace OpenGui.Controls
         public float Width { get => GetValue<float>(); set => SetValue<float>(value); }
 
         /// <summary>
-        /// get or set th height of the view
+        /// get or set the height of the view
         /// </summary>
         public float Height { get => GetValue<float>(); set => SetValue<float>(value); }
+
+        /// <summary>
+        /// get or set the minimum width of the view.
+        /// </summary>
+        public float MinWidth { get => GetValue<float>(); set => SetValue<float>(value); }
+        
+        /// <summary>
+        /// get or set the minimum height of the view.
+        /// </summary>
+        public float MinHeight { get => GetValue<float>(); set => SetValue<float>(value); }
 
         /// <summary>
         /// get or set the tall of the view
@@ -84,7 +103,9 @@ namespace OpenGui.Controls
             SetValue<float>(nameof(Width), ReactiveObject.LAYOUT_VALUE, 0);
             SetValue<float>(nameof(Height), ReactiveObject.LAYOUT_VALUE, 0);
             SetValue<float>(nameof(Depth), ReactiveObject.LAYOUT_VALUE, 0);
-
+            SetValue<float>(nameof(MinWidth), ReactiveObject.LAYOUT_VALUE, 0);
+            SetValue<float>(nameof(MinHeight), ReactiveObject.LAYOUT_VALUE, 0);
+            
             SetValue<float>(nameof(X), ReactiveObject.LAYOUT_VALUE, 0);
             SetValue<float>(nameof(Y), ReactiveObject.LAYOUT_VALUE, 0);
             SetValue<float>(nameof(Z), ReactiveObject.LAYOUT_VALUE, 0);
@@ -98,23 +119,40 @@ namespace OpenGui.Controls
         {
             return new ViewModelProvider();
         }
+                
+        /// <summary>
+        /// Calculate the size of the view.
+        /// </summary>
+        /// <param name="width">the width specification.</param>
+        /// <param name="height">the height specification.</param>
+        /// <param name="mode">mode specification.</param>
+        /// <returns>return the size measured to render this view.</returns>
+        protected virtual (float measuredWidth, float measuredHeight) OnMesure(float widthSpec, float heightSpec, MeasureSpecMode mode)
+        {
+            return (0, 0);
+        }
 
         /// <summary>
-        /// Call before draw.
+        /// Calculate the size of the view.
         /// </summary>
-        public virtual void Initialize(float maxWidth, float maxHeight, float parentX, float parentY)
+        /// <param name="width">the width specification.</param>
+        /// <param name="height">the height specification.</param>
+        /// <param name="mode">mode specification.</param>        
+        public void Mesure(float widthSpec, float heightSpec, MeasureSpecMode mode)
         {
-            
+            var size = OnMesure(widthSpec, heightSpec, mode);
+            SetMeasuredSize(size.measuredWidth, size.measuredHeight);
         }
 
-        private float getWidthToRender()
+        /// <summary>
+        /// Set the measured size of this view.
+        /// </summary>
+        /// <param name="width">The width to render.</param>
+        /// <param name="height">The height to render</param>
+        private void SetMeasuredSize(float width, float height)
         {
-            return CalculatedWidth != float.NegativeInfinity ? CalculatedWidth : Width;
-        }
-
-        private float getHeightToRender()
-        {
-            return CalculatedHeight != float.NegativeInfinity ? CalculatedHeight : Height;
+            CalculatedWidth = width;
+            CalculatedHeight = height;
         }
 
         /// <summary>
@@ -124,8 +162,8 @@ namespace OpenGui.Controls
         /// <param name="view">The view matrix.</param>
         public virtual void GLDraw(Matrix4 perspectiveProjection, Matrix4 view, RectangleF clipRectangle, int windowWidth, int windowHeight)
         {
-            var viewWidth = getWidthToRender();
-            var viewHeight = getHeightToRender();
+            var viewWidth = CalculatedWidth;
+            var viewHeight = CalculatedHeight;
             var viewx = X;
             var viewy = -Y;
             var viewz = Z;
@@ -146,7 +184,7 @@ namespace OpenGui.Controls
             GLDraw(perspectiveProjection, view);
         }
 
-        protected void ForzeDraw()
+        public void ForzeDraw()
         {
             forzeDraw = true;
         }
@@ -162,7 +200,7 @@ namespace OpenGui.Controls
 
         public void GLDraw(Matrix4 perspectiveProjection, Matrix4 view)
         {
-            var texture = GetTexture(getWidthToRender(), getHeightToRender());
+            var texture = GetTexture(CalculatedWidth, CalculatedHeight);
 
             texture.StartUsingTexture();
             _transformableObject.Draw(perspectiveProjection, view);
@@ -171,31 +209,35 @@ namespace OpenGui.Controls
 
         //return the texture to draw
         private Texture GetTexture(float _width, float _height)
-        {            
-            if(!_texture.IsLoaded)
+        {
+            if (!_texture.IsLoaded)
             {
-                _texture.LoadTexture(GetBitmap(_width, _height));
+                using (var bitmap = GetBitmap(_width, _height))
+                    _texture.LoadTexture(bitmap);
             }
             else
             {
                 //if is forzed to draw with same size
-                if(forzeDraw && _width == _lastWidth && _height == _lastHeight)
+                if (forzeDraw && _width == _lastWidth && _height == _lastHeight)
                 {
-                    _texture.ChangeBitmapSameSize(GetBitmap(_width, _height));
+                    using (var bitmap = GetBitmap(_width, _height))
+                        _texture.ChangeBitmapSameSize(bitmap);
                 }
                 else
                 //check if we have to update the bitmap
-                if(_width > _lastWidth || _height > _lastHeight)
+                if (_width > _lastWidth || _height > _lastHeight)
                 {
-                    _texture.ChangeBitmap(GetBitmap(_width, _height));
+                    using (var bitmap = GetBitmap(_width, _height))
+                        _texture.ChangeBitmap(bitmap);
                 }
                 else
                 {
                     var newAspectRatio = _width / _height;
                     var lastAspectRatio = _lastWidth / _lastHeight;
-                    if(newAspectRatio != lastAspectRatio)
+                    if (newAspectRatio != lastAspectRatio)
                     {
-                        _texture.ChangeBitmap(GetBitmap(_width, _height));
+                        using (var bitmap = GetBitmap(_width, _height))
+                            _texture.ChangeBitmap(bitmap);
                     }
                 }
             }
@@ -210,12 +252,19 @@ namespace OpenGui.Controls
         //return the bitmap used by the texture
         private SKBitmap GetBitmap(float _width, float _height)
         {
-            var bitmap = new SKBitmap(new SKImageInfo((int)_width, (int)_height, SKColorType.Rgba8888, SKAlphaType.Unpremul));
+            var bitmap = new SKBitmap(new SKImageInfo((int)_width, (int)_height, SKColorType.Rgba8888));
             using (var canvas = new SKCanvas(bitmap))
             {                
-                DrawTexture(canvas, bitmap.Width, bitmap.Height);
+                DrawTexture(canvas, bitmap.Width, bitmap.Height);                
             }
+
             return bitmap;
+        }
+
+        ~LowLevelView()
+        {
+            if(_texture.IsLoaded)
+              _texture.Dispose();
         }
 
     }

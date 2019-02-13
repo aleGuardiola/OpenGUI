@@ -22,6 +22,16 @@ namespace OpenGui.Core
         }
 
         /// <summary>
+        /// Verify if the specific property exist.
+        /// </summary>
+        /// <param name="propertyName">The name of the property</param>
+        /// <returns>true if the property exist or false if not.</returns>
+        public bool Exist(string propertyName)
+        {
+            return _properties.ContainsKey(propertyName);
+        }
+
+        /// <summary>
         /// Set the value of the property with a priority.
         /// </summary>
         /// <param name="propertyName">Name of the property.</param>
@@ -83,6 +93,14 @@ namespace OpenGui.Core
             return (T)property.values[priority];
         }
 
+        /// <summary>
+        /// Try to get the value of a property.
+        /// </summary>
+        /// <typeparam name="T">The property type.</typeparam>
+        /// <param name="propertyName">The property name.</param>
+        /// <param name="priority">The priority of the value.</param>
+        /// <param name="value">The value to try to get.</param>
+        /// <returns>return true if the property exist or false if not.</returns>
         public bool TryGetValue<T>(string propertyName, int priority, out T value)
         {
             Property property;

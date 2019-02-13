@@ -17,40 +17,24 @@ namespace TestNetCore
             Window guiCoreWindow = new Window(windows);
             guiCoreWindow.BackgroundColor = OpenTK.Color.Gray;
 
-            var view = new StackLayout() { Orientation = OpenGui.Values.Orientation.Horizontal };
-            view.Children.Add(new View() {
-                Background = new DrawableColor(Color.FromArgb(255, 255, 0, 0)),
-                Width = 100f,
-                Height = 100f,
-                MarginLeft = 10f,
-                MarginRight = 10f,
-                Align = OpenGui.Values.Align.Top
-            });
-
-            view.Children.Add(new View()
+            guiCoreWindow.Root = new CoordinateLayout()
             {
-                Background = new DrawableColor(Color.FromArgb(255, 255, 0, 0)),
-                Width = 100f,
-                Height = 100f,
-                MarginLeft = 10f,
-                MarginRight = 10f,
-                Align = OpenGui.Values.Align.Bottom
-            });
+                Background = new DrawableColor(Color.Cyan),
+                Children =
+                {
+                   new Label()
+                   {
+                       Width = 500,
+                       Height = 500,
+                       RelativeX = 20,
+                       RelativeY = 20,
+                       Text = "Alejo"
+                   }
+                }
+               
+            };
 
-            view.Background = new DrawableColor(Color.FromArgb(255, 255, 255, 255));
-
-            view.Width = float.PositiveInfinity;
-            view.Height = float.PositiveInfinity;
-
-            view.PaddingBottom = 10f;
-            view.PaddingTop = 10f;
-            view.PaddingRight = 10f;
-            view.PaddingLeft = 10f;
-            view.ContentAlign = OpenGui.Values.Align.Left;
-
-            guiCoreWindow.Root = view;
             windows.Run();
-
         }
     }
 }

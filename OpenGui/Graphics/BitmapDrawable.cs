@@ -21,7 +21,7 @@ namespace OpenGui.Graphics
         {
             using (var paint = new SKPaint())
             {
-                canvas.DrawBitmap(Bitmap, 0, 0, paint);
+                canvas.DrawBitmap(Bitmap, width, height, paint);
             }
                 
         }
