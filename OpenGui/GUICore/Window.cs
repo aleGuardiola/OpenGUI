@@ -96,9 +96,9 @@ namespace OpenGui.GUICore
 
             //clear screen with the background color
             GL.ClearColor(_backgroundColor);
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+            GL.Clear(ClearBufferMask.ColorBufferBit);
 
-            _renderManager.RenderFrame(e.Time, _camera.Projection, _camera.View, _inputManager, Root, _gameWindow.Width, _gameWindow.Height);
+            _renderManager.RenderFrame(e.Time, _camera.Projection, _camera.View, _inputManager, Root, _gameWindow.Width, _gameWindow.Height, _depthZ);
 
             //swap the buffers after everything is rendered
             _gameWindow.SwapBuffers();
@@ -109,7 +109,7 @@ namespace OpenGui.GUICore
         private void setupOpenGL()
         {
             //enable depth test for 3d rendering
-            GL.Enable(EnableCap.DepthTest);
+            //GL.Enable(EnableCap.DepthTest);
             //enable blend for alpha texture
             GL.Disable(EnableCap.CullFace);
             GL.Enable(EnableCap.Blend);
@@ -130,6 +130,7 @@ namespace OpenGui.GUICore
         {
             float viewPortWidth = (float)rect.Width;
             float viewPortHeight = (float)rect.Height;
+            viewPortHeight = viewPortHeight == 0 ? 1 : viewPortHeight;
             float fieldOfAngle = 45f;
             float fieldOfAngleRadians = MathHelper.DegreesToRadians(fieldOfAngle);
 

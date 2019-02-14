@@ -28,16 +28,17 @@ namespace OpenGui.GUICore
             {
                 //triangle one
                 //x      y      z       u      v
-                 -1.0f,  1.0f,  0.0f,   0.0f,  1.0f,
-                 -1.0f, -1.0f,  0.0f,   0.0f,  0.0f,
-                  1.0f,  1.0f,  0.0f,   1.0f,  1.0f,
+                 -1.0f,  1.0f,  0.0f,   0.0f,  0.0f,
+                 -1.0f, -1.0f,  0.0f,   0.0f,  1.0f,
+                  1.0f,  1.0f,  0.0f,   1.0f,  0.0f,
 
                 //triangle two
                 //x      y      z       u      v
-                  1.0f,  1.0f,  0.0f,   1.0f,  1.0f,
-                 -1.0f, -1.0f,  0.0f,   0.0f,  0.0f,
-                  1.0f, -1.0f,  0.0f,   1.0f,  0.0f 
+                  1.0f,  1.0f,  0.0f,   1.0f,  0.0f,
+                 -1.0f, -1.0f,  0.0f,   0.0f,  1.0f,
+                  1.0f, -1.0f,  0.0f,   1.0f,  1.0f
             };
+
 
             GL.GenVertexArrays(1, out VAO);
             GL.BindVertexArray(VAO);

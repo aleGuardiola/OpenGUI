@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ExCSS;
 using OpenGui.Core;
 using OpenGui.Graphics;
 using OpenGui.Values;
@@ -41,16 +40,7 @@ namespace OpenGui.Controls
             get => GetValue<Drawable>();
             set => SetValue<Drawable>(value);
         }
-
-        /// <summary>
-        /// Get or Set the aligment of the view
-        /// </summary>
-        public Align Align
-        {
-            get => GetValue<Align>();
-            set => SetValue<Align>(value);
-        }
-
+                
         /// <summary>
         /// Get or Set the padding top of the View
         /// </summary>
@@ -142,6 +132,18 @@ namespace OpenGui.Controls
             set => SetValue<float>(value);          
         }
 
+        public VerticalAligment VerticalAligment
+        {
+            get => GetValue<VerticalAligment>();
+            set => SetValue<VerticalAligment>(value);
+        }
+
+        public HorizontalAligment HorizontalAligment
+        {
+            get => GetValue<HorizontalAligment>();
+            set => SetValue<HorizontalAligment>(value);
+        }
+
         public View()
         {
             SetValue<float>(nameof(RelativeX), ReactiveObject.LAYOUT_VALUE, 0);
@@ -157,9 +159,12 @@ namespace OpenGui.Controls
             SetValue<float>(nameof(PaddingRight), ReactiveObject.LAYOUT_VALUE, 0);
             SetValue<float>(nameof(PaddingLeft), ReactiveObject.LAYOUT_VALUE, 0);
 
-            SetValue<Drawable>(nameof(Background), ReactiveObject.LAYOUT_VALUE, null);
+            SetValue<Drawable>(nameof(Background), ReactiveObject.LAYOUT_VALUE, new DrawableColor(System.Drawing.Color.Transparent));
 
             SetValue<Align>(nameof(Align), ReactiveObject.LAYOUT_VALUE, Align.Center);
+
+            SetValue<VerticalAligment>(nameof(VerticalAligment), ReactiveObject.LAYOUT_VALUE,  VerticalAligment.Center );
+            SetValue<HorizontalAligment>(nameof(HorizontalAligment), ReactiveObject.LAYOUT_VALUE, HorizontalAligment.Center );
         }
 
         protected override (float measuredWidth, float measuredHeight) OnMesure(float widthSpec, float heightSpec, MeasureSpecMode mode)
@@ -173,40 +178,27 @@ namespace OpenGui.Controls
             switch (mode)
             {
                 case MeasureSpecMode.Exactly:
-                    if (!TryGetValue<float>(nameof(Width), ReactiveObject.USER_VALUE, out width))
-                        width = Math.Max(widthSpec, minWidth);
-
-                    if (!TryGetValue<float>(nameof(Height), ReactiveObject.USER_VALUE, out height))
-                        height = Math.Max(heightSpec, minWidth);
-
+                    width = Math.Max(widthSpec, minWidth);
+                    height = Math.Max(heightSpec, minWidth);
                     break;                 
                 case MeasureSpecMode.AtMost:
-
-                    //calculate width
-                    if(!TryGetValue<float>(nameof(Width), ReactiveObject.USER_VALUE, out width))
-                    {
-                        width = Math.Max( Math.Max(PaddingLeft + PaddingRight, Width), minWidth );
+                    //calculate width                    
+                        width = Math.Max(PaddingLeft + PaddingRight, minWidth );
                         if (width > widthSpec)
-                            width = Math.Max(widthSpec, minWidth);
-                    }
+                            width = Math.Max(widthSpec, minWidth);                    
 
                     //calculate height
-                    if (!TryGetValue<float>(nameof(Height), ReactiveObject.USER_VALUE, out height))
-                    {
-                        height = Math.Max(Math.Max(PaddingTop + PaddingBottom, height), minHeight);
+                        height = Math.Max(PaddingTop + PaddingBottom, minHeight);
                         if (height > heightSpec)
-                            height = Math.Max(heightSpec, minHeight);
-                    }
+                            height = Math.Max(heightSpec, minHeight);                    
                     break;
                 case MeasureSpecMode.Unspecified:
 
                     //calculate width
-                    if (!TryGetValue<float>(nameof(Width), ReactiveObject.USER_VALUE, out width))                    
-                        width = Math.Max(Math.Max(PaddingLeft + PaddingRight, Width), minWidth);                   
+                    width = Math.Max(PaddingLeft + PaddingRight, minWidth);                   
 
                     //calculate height
-                    if (!TryGetValue<float>(nameof(Height), ReactiveObject.USER_VALUE, out height))                    
-                        height = Math.Max(Math.Max(PaddingTop + PaddingBottom, height), minHeight);
+                    height = Math.Max(PaddingTop + PaddingBottom, minHeight);
                     break;
             }
 

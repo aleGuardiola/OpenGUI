@@ -100,11 +100,11 @@ namespace OpenGui.Controls
             _transformableObject = new ViewTransformableObject(modelProvider);
             _uniqueId = Guid.NewGuid();
 
-            SetValue<float>(nameof(Width), ReactiveObject.LAYOUT_VALUE, 0);
-            SetValue<float>(nameof(Height), ReactiveObject.LAYOUT_VALUE, 0);
-            SetValue<float>(nameof(Depth), ReactiveObject.LAYOUT_VALUE, 0);
-            SetValue<float>(nameof(MinWidth), ReactiveObject.LAYOUT_VALUE, 0);
-            SetValue<float>(nameof(MinHeight), ReactiveObject.LAYOUT_VALUE, 0);
+            SetValue<float>(nameof(Width), ReactiveObject.LAYOUT_VALUE, (int)WidthOptions.Auto);
+            SetValue<float>(nameof(Height), ReactiveObject.LAYOUT_VALUE, (int)HeightOptions.Auto);
+            SetValue<float>(nameof(Depth), ReactiveObject.LAYOUT_VALUE, 1);
+            SetValue<float>(nameof(MinWidth), ReactiveObject.LAYOUT_VALUE, 25);
+            SetValue<float>(nameof(MinHeight), ReactiveObject.LAYOUT_VALUE, 25);
             
             SetValue<float>(nameof(X), ReactiveObject.LAYOUT_VALUE, 0);
             SetValue<float>(nameof(Y), ReactiveObject.LAYOUT_VALUE, 0);
@@ -160,7 +160,7 @@ namespace OpenGui.Controls
         /// </summary>
         /// <param name="perspectiveProjection">The projection matrix.</param>
         /// <param name="view">The view matrix.</param>
-        public virtual void GLDraw(Matrix4 perspectiveProjection, Matrix4 view, RectangleF clipRectangle, int windowWidth, int windowHeight)
+        public virtual void GLDraw(Matrix4 perspectiveProjection, Matrix4 view, RectangleF clipRectangle, int windowWidth, int windowHeight, float cameraZ)
         {
             var viewWidth = CalculatedWidth;
             var viewHeight = CalculatedHeight;
@@ -171,11 +171,12 @@ namespace OpenGui.Controls
 
             var x = (viewx - (windowWidth/2)) + (viewWidth/2.0f);
             var y = (viewy + (windowHeight/2) ) - (viewHeight/2.0f);
+            var z = (viewz * cameraZ) / 100;
 
             var model = Matrix4.Identity;
             model *= Matrix4.CreateScale(viewWidth/2.0f, viewHeight/2.0f, viewDepth/2.0f);
             //model *= Matrix4.CreateRotationX(MathHelper.DegreesToRadians(45)); 
-            model *= Matrix4.CreateTranslation(x, y, viewz);
+            model *= Matrix4.CreateTranslation(x, y, z);
 
             _transformableObject.TransformationMatrix = model;
 
@@ -184,7 +185,7 @@ namespace OpenGui.Controls
             GLDraw(perspectiveProjection, view);
         }
 
-        public void ForzeDraw()
+        protected void ForzeDraw()
         {
             forzeDraw = true;
         }

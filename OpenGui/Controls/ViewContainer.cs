@@ -4,6 +4,7 @@ using OpenGui.Values;
 using OpenTK;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace OpenGui.Controls
@@ -52,16 +53,16 @@ namespace OpenGui.Controls
 
         protected abstract void OnLayout();
         
-        public override void GLDraw(Matrix4 perspectiveProjection, Matrix4 view, RectangleF clipRectangle, int windowWidth, int windowHeight)
+        public override void GLDraw(Matrix4 perspectiveProjection, Matrix4 view, RectangleF clipRectangle, int windowWidth, int windowHeight, float cameraZ)
         {
-            //draw each children
-            for (int i = 0; i < base.Children.Count; i++)
-            {
-                Children[i].GLDraw(perspectiveProjection, view, clipRectangle, windowWidth, windowHeight);
-            }
-
             //draw itself
-            base.GLDraw(perspectiveProjection, view, clipRectangle, windowWidth, windowHeight);
+            base.GLDraw(perspectiveProjection, view, clipRectangle, windowWidth, windowHeight, cameraZ);
+
+            //draw each children ordered by z
+            foreach(var child in Children.OrderBy((c)=>c.Z))
+            {
+                child.GLDraw(perspectiveProjection, view, clipRectangle, windowWidth, windowHeight, cameraZ);
+            }
         }
 
     }

@@ -8,6 +8,6 @@ namespace OpenGui.GUICore
 {
     public interface IUIRenderManager
     {
-        void RenderFrame(double deltaTime, Matrix4 projection, Matrix4 view, InputManager inputManager, ViewContainer rootView, int width, int height);
+        void RenderFrame(double deltaTime, Matrix4 projection, Matrix4 view, InputManager inputManager, ViewContainer rootView, int width, int height, float cameraZ);
     }
 }
