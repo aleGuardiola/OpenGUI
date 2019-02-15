@@ -102,9 +102,13 @@ namespace OpenGui.GUICore
         /// <param name="bitmap">The new data.</param>
         public void ChangeBitmapSameSize(SKBitmap bitmap)
         {
-            GL.BindTexture(TextureTarget.Texture2D, _textureId);
-            GL.TexSubImage2D(TextureTarget2d.Texture2D, 0, 0, 0, bitmap.Width, bitmap.Height, PixelFormat.Rgba, PixelType.Byte, bitmap.GetPixels());
-            GL.BindTexture(TextureTarget.Texture2D, 0);
+            //TODO
+
+            //GL.BindTexture(TextureTarget.Texture2D, _textureId);
+            //GL.TexSubImage2D(TextureTarget2d.Texture2D, 0, 0, 0, bitmap.Width, bitmap.Height, PixelFormat.Rgba, PixelType.Byte, bitmap.GetPixels());
+            //GL.BindTexture(TextureTarget.Texture2D, 0);
+
+            ChangeBitmap(bitmap);
         }
 
         public void StartUsingTexture()

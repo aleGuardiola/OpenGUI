@@ -222,7 +222,7 @@ namespace OpenGui.Controls
                 if (forzeDraw && _width == _lastWidth && _height == _lastHeight)
                 {
                     using (var bitmap = GetBitmap(_width, _height))
-                        _texture.ChangeBitmapSameSize(bitmap);
+                        _texture.ChangeBitmapSameSize(bitmap);                        
                 }
                 else
                 //check if we have to update the bitmap
