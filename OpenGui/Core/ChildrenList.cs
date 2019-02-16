@@ -38,6 +38,7 @@ namespace OpenGui.Core
         public void Add(View item)
         {
             CheckThread();
+            item.Parent = _container;
             _views.Add(item);
             if (_window != null)
                 item.AttachWindow(_window);

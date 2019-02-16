@@ -1,4 +1,5 @@
 ﻿using OpenGui.Controls;
+using OpenGui.Core;
 using OpenGui.OpenGLHelpers;
 using OpenTK;
 using OpenTK.Graphics.ES20;
@@ -6,6 +7,7 @@ using OpenTK.Platform;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 
@@ -36,6 +38,8 @@ namespace OpenGui.GUICore
 
         private ViewContainer _root;
 
+        private List<FrameRunner> frameRunners = new List<FrameRunner>();
+
         public ViewContainer Root
         {
             get => _root;
@@ -47,6 +51,11 @@ namespace OpenGui.GUICore
                 value.AttachWindow(this);
                 _root = value;
             }
+        }
+
+        public void AddFrameRunner(FrameRunner runner)
+        {
+            frameRunners.Add(runner);
         }
 
         public Thread UiThread
@@ -120,6 +129,13 @@ namespace OpenGui.GUICore
                 if (_actionsQueue.TryDequeue(out action))
                     action.Invoke();
             }
+
+            //execute frame runners
+            foreach(var runner in frameRunners)            
+                runner.Update((float)e.Time);
+
+            //remove finished runners
+            frameRunners.Where((r) => r.Stoped()).ToList().ForEach((r) => frameRunners.Remove(r));
 
             //Print deltatime
             Console.Clear();

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using OpenGui.Core;
 using OpenGui.Graphics;
+using OpenGui.Helpers;
 using OpenGui.Values;
 using OpenTK;
 using SkiaSharp;
@@ -13,7 +14,8 @@ namespace OpenGui.Controls
     {
         string _id;
         string _class;
-        
+        SubscriptionPool _subscriptionPool;
+
         /// <summary>
         /// The id of this view
         /// </summary>
@@ -30,6 +32,12 @@ namespace OpenGui.Controls
         {
             get => _class;
             set => _class = value;
+        }
+
+        public ViewContainer Parent
+        {
+            get => GetValue<ViewContainer>();
+            set => SetValue<ViewContainer>(value);
         }
 
         /// <summary>
@@ -146,6 +154,9 @@ namespace OpenGui.Controls
 
         public View()
         {
+            _subscriptionPool = new SubscriptionPool();
+            Parent = null;
+
             SetValue<float>(nameof(RelativeX), ReactiveObject.LAYOUT_VALUE, 0);
             SetValue<float>(nameof(RelativeY), ReactiveObject.LAYOUT_VALUE, 0);
 
@@ -165,6 +176,16 @@ namespace OpenGui.Controls
 
             SetValue<VerticalAligment>(nameof(VerticalAligment), ReactiveObject.LAYOUT_VALUE,  VerticalAligment.Center );
             SetValue<HorizontalAligment>(nameof(HorizontalAligment), ReactiveObject.LAYOUT_VALUE, HorizontalAligment.Center );
+
+            _subscriptionPool.Add(GetObservable<float>(nameof(Width)).Subscribe((v) => Parent?.ForceMeasure()));
+            _subscriptionPool.Add(GetObservable<float>(nameof(Height)).Subscribe((v) => Parent?.ForceMeasure()));
+            _subscriptionPool.Add(GetObservable<HorizontalAligment>(nameof(HorizontalAligment)).Subscribe((v) => Parent?.ForceMeasure()));
+            _subscriptionPool.Add(GetObservable<VerticalAligment>(nameof(VerticalAligment)).Subscribe((v) => Parent?.ForceMeasure()));
+        }
+
+        public virtual void Check()
+        {
+
         }
 
         protected override (float measuredWidth, float measuredHeight) OnMesure(float widthSpec, float heightSpec, MeasureSpecMode mode)
@@ -211,6 +232,11 @@ namespace OpenGui.Controls
                 base.DrawTexture(canvas, width, height);
             else
                 Background.Draw(width, height, canvas);
+        }
+
+        ~View()
+        {
+            _subscriptionPool.UnsubscribeAll();
         }
 
     }

@@ -24,6 +24,8 @@ namespace OpenGui.GUICore
             //measure only if size has changed
             if(lastWidth != width || lastHeight != height)
               rootView.Mesure(width, height, Values.MeasureSpecMode.Exactly);
+            else            
+              rootView.Check();            
             
             //render view
             rootView.GLDraw(projection, view, new RectangleF(0, 0, 1000, 1000 ), width, height, cameraZ);

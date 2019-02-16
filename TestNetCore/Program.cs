@@ -1,8 +1,10 @@
-﻿using OpenGui.Controls;
+﻿using OpenGui.Animations;
+using OpenGui.Controls;
 using OpenGui.Graphics;
 using OpenGui.GUICore;
 using OpenGui.Values;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,10 +15,25 @@ namespace TestNetCore
     {
         static void Main(string[] args)
         {
-            OpenTK.GameWindow windows = new OpenTK.GameWindow(800, 600);
 
-            Window guiCoreWindow = new Window(windows);
+            OpenGui.Controls.Image image = null;
+            OpenTK.GameWindow windows;
+            Window guiCoreWindow = null;
+
+
+            windows = new OpenTK.GameWindow(800, 600);
+            guiCoreWindow = new Window(windows);
+
             guiCoreWindow.BackgroundColor = OpenTK.Color.Purple;
+
+            image = new OpenGui.Controls.Image()
+            {
+                Width = 700,
+                Height = 500,
+                ImageMode = ImageMode.Fit,
+                Source = new WebImageSource(@"http://www.bestprintingonline.com/help_resources/Image/Ducky_Head_Web_Low-Res.jpg"),
+                Background = new DrawableColor(Color.Wheat)
+            };
 
             guiCoreWindow.Root = new CoordinateLayout()
             {
@@ -34,21 +51,21 @@ namespace TestNetCore
                    //    HorizontalAligment = OpenGui.Values.HorizontalAligment.Stretch,
                    //    PaddingLeft = 30f
                    //},
-                   new OpenGui.Controls.Image()
-                   {
-                       HorizontalAligment = HorizontalAligment.Stretch,
-                       VerticalAligment = VerticalAligment.Stretch,
-                       Width = 500,
-                       Height = 500,
-                       ImageMode = ImageMode.Fit,
-                       Source = new WebImageSource(@"https://wallpaperbrowse.com/media/images/3848765-wallpaper-images-download.jpg"),
-                       Background = new DrawableColor(Color.Wheat)                       
-                   }
+                   image
                 }
-               
             };
+                        
+            var anim = new ParallelAnimation(image, new List<Animation>()
+            {
+                new FloatPropertyAnimation(image, "Width", 5000, 0f, 500f, FloatPropertyAnimation.Linear),
+                new FloatPropertyAnimation(image, "Height", 5000, 0f, 500f, FloatPropertyAnimation.Linear)
+            });
+
+            guiCoreWindow.AddFrameRunner(anim);
+            
 
             windows.Run();
+
         }
     }
 }

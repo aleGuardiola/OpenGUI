@@ -12,23 +12,75 @@ namespace OpenGui.Controls
 {
     public abstract class ViewContainer : View
     {
+        public bool IsForceMeasure
+        {
+            get;
+            private set;
+        }
+
         IList<View> _children;
         public IList<View> Children
         {
             get => _children;
         }
 
-        public Align ContentAlign
-        {
-            get => GetValue<Align>();
-            set => SetValue<Align>(value);
-        }
-
         public ViewContainer()
         {
             _children = new ChildrenList(this);
-            SetValue<Align>(nameof(ContentAlign), ReactiveObject.LAYOUT_VALUE, Align.Center);
+            IsForceMeasure = true;
         }
+
+        public override void Check()
+        {
+            for (int i = 0; i < _children.Count; i++)
+                _children[i].Check();
+
+            if (IsForceMeasure)
+            {
+                var width = CalculatedWidth;
+                var height = CalculatedHeight;
+
+                Mesure(width, height, MeasureSpecMode.Unspecified);
+                if (CalculatedWidth > width || CalculatedHeight > height)
+                    Parent.ForceMeasure();
+                else
+                    Mesure(width, height, MeasureSpecMode.Exactly);
+            }
+            IsForceMeasure = false;
+        }
+        
+        protected override (float measuredWidth, float measuredHeight) OnMesure(float widthSpec, float heightSpec, MeasureSpecMode mode)
+        {
+            OnLayout();
+            return base.OnMesure(widthSpec, heightSpec, mode);
+        }
+
+        public override void AttachWindow(Window window)
+        {
+            base.AttachWindow(window);
+            ((ChildrenList)Children).AttachWindow(window);
+        }
+
+        protected abstract void OnLayout();
+        
+        public void ForceMeasure()
+        {
+            CheckThread();
+            IsForceMeasure = true;
+        }
+
+        public override void GLDraw(Matrix4 perspectiveProjection, Matrix4 view, RectangleF clipRectangle, int windowWidth, int windowHeight, float cameraZ)
+        {
+            //draw itself
+            base.GLDraw(perspectiveProjection, view, clipRectangle, windowWidth, windowHeight, cameraZ);
+
+            //draw each children ordered by z
+            foreach (var child in Children.OrderBy((c) => c.Z))
+            {
+                child.GLDraw(perspectiveProjection, view, clipRectangle, windowWidth, windowHeight, cameraZ);
+            }
+        }
+
     }
 
     public abstract class ViewContainer<T> : ViewContainer where T : View
@@ -44,32 +96,6 @@ namespace OpenGui.Controls
         public ViewContainer()
         {
             
-        }
-
-        protected override (float measuredWidth, float measuredHeight) OnMesure(float widthSpec, float heightSpec, MeasureSpecMode mode)
-        {
-            OnLayout();
-            return base.OnMesure(widthSpec, heightSpec, mode);
-        }
-
-        protected abstract void OnLayout();
-
-        public override void AttachWindow(Window window)
-        {
-            base.AttachWindow(window);
-            ((ChildrenList)base.Children).AttachWindow(window);
-        }
-
-        public override void GLDraw(Matrix4 perspectiveProjection, Matrix4 view, RectangleF clipRectangle, int windowWidth, int windowHeight, float cameraZ)
-        {
-            //draw itself
-            base.GLDraw(perspectiveProjection, view, clipRectangle, windowWidth, windowHeight, cameraZ);
-
-            //draw each children ordered by z
-            foreach(var child in Children.OrderBy((c)=>c.Z))
-            {
-                child.GLDraw(perspectiveProjection, view, clipRectangle, windowWidth, windowHeight, cameraZ);
-            }
         }
 
     }

@@ -13,14 +13,15 @@ namespace OpenGui.Controls
     {
         SubscriptionPool subscriptionPool = new SubscriptionPool();
         SKBitmap imageToRender;
-        float lastWidth = 0, lastHeight = 0;
+        int lastWidth = 0, lastHeight = 0;
+        int imageWidth = 0, imageHeight = 0;
 
         public ImageSource Source
         {
             get => GetValue<ImageSource>();
             set => SetValue<ImageSource>(value);
         }
-
+         
         public bool IsLoading
         {
             get => GetValue<bool>();
@@ -41,21 +42,23 @@ namespace OpenGui.Controls
 
             SetValue<bool>(nameof(IsLoading), ReactiveObject.LAYOUT_VALUE, false);
             SetValue<ImageMode>(nameof(ImageMode), ReactiveObject.LAYOUT_VALUE, ImageMode.Fit);
-
-            AttachedToWindow += Image_AttachedToWindow;
-        }
-
-        private void Image_AttachedToWindow(object sender, EventArgs e)
-        {
-            imageSourceChanged(Source);
         }
 
         private void imageSourceChanged(ImageSource source)
         {
+            if (source == null)
+                return;
+
+            if (source.IsCached(imageWidth, imageHeight))
+            {
+                imageToRender = source.GetImage(imageWidth, imageHeight).GetAwaiter().GetResult();
+                return;
+            }
+
             if (!IsAttachedToWindows)
                 return;
 
-            imageToRender = new SKBitmap(0,0);
+            imageToRender = null;
 
             ForzeDraw();
 
@@ -63,7 +66,7 @@ namespace OpenGui.Controls
 
             Task.Run(async () =>
             {
-                var image = await source.GetImage((int)Width, (int)Height);
+                var image = await source.GetImage(imageWidth, imageHeight);
 
                 Window.RunInUIThread(() =>
                 {
@@ -121,13 +124,18 @@ namespace OpenGui.Controls
         {
             base.DrawTexture(canvas, width, height);
 
+            var destRect = new SKRect(PaddingLeft, PaddingTop, width - PaddingRight, height - PaddingBottom);
+            imageWidth = (int)destRect.Width;
+            imageHeight = (int)destRect.Height;
+            
+            if (lastWidth != imageWidth || lastHeight != imageHeight)
+                imageSourceChanged(Source);
+            
+            lastWidth = imageWidth;
+            lastHeight = imageHeight;
+            
             if (imageToRender == null)
                 return;
-
-            if (lastWidth != width || lastHeight != height)
-                imageSourceChanged(Source);
-
-            var destRect = new SKRect(PaddingLeft, PaddingTop, width - PaddingRight, height - PaddingBottom);
 
             using (var imagePaint = new SKPaint())
             {
@@ -154,8 +162,6 @@ namespace OpenGui.Controls
 
                 canvas.DrawBitmap(imageToRender, srcRect, destRect, imagePaint);
 
-                lastWidth = width;
-                lastHeight = height;
 
             }
 

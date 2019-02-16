@@ -91,6 +91,21 @@ namespace OpenGui.Controls
         public float Height { get => GetValue<float>(); set => SetValue<float>(value); }
 
         /// <summary>
+        /// get or set the rotation of the view.
+        /// </summary>
+        public float Rotation { get => GetValue<float>(); set => SetValue<float>(value); }
+
+        /// <summary>
+        /// get or set the rotationY of the view.
+        /// </summary>
+        public float RotationY { get => GetValue<float>(); set => SetValue<float>(value); }
+
+        /// <summary>
+        /// get or set the rotationZ of the view.
+        /// </summary>
+        public float RotationZ { get => GetValue<float>(); set => SetValue<float>(value); }
+
+        /// <summary>
         /// get or set the minimum width of the view.
         /// </summary>
         public float MinWidth { get => GetValue<float>(); set => SetValue<float>(value); }
@@ -124,6 +139,10 @@ namespace OpenGui.Controls
             SetValue<float>(nameof(X), ReactiveObject.LAYOUT_VALUE, 0);
             SetValue<float>(nameof(Y), ReactiveObject.LAYOUT_VALUE, 0);
             SetValue<float>(nameof(Z), ReactiveObject.LAYOUT_VALUE, 0);
+
+            SetValue<float>(nameof(Rotation), ReactiveObject.LAYOUT_VALUE, 0);
+            SetValue<float>(nameof(RotationY), ReactiveObject.LAYOUT_VALUE, 0);
+            SetValue<float>(nameof(RotationZ), ReactiveObject.LAYOUT_VALUE, 0);
         }
 
         public virtual void AttachWindow(Window window)
@@ -198,7 +217,9 @@ namespace OpenGui.Controls
 
             var model = Matrix4.Identity;
             model *= Matrix4.CreateScale(viewWidth/2.0f, viewHeight/2.0f, viewDepth/2.0f);
-            //model *= Matrix4.CreateRotationX(MathHelper.DegreesToRadians(45)); 
+            model *= Matrix4.CreateRotationZ(MathHelper.DegreesToRadians(Rotation)); 
+            model *= Matrix4.CreateRotationY(MathHelper.DegreesToRadians(RotationY)); 
+            model *= Matrix4.CreateRotationX(MathHelper.DegreesToRadians(RotationZ)); 
             model *= Matrix4.CreateTranslation(x, y, z);
 
             _transformableObject.TransformationMatrix = model;

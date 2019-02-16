@@ -16,7 +16,13 @@ namespace OpenGui.Values
         public WebImageSource(string url)
         {
             _url = url;
-            _client = new HttpClient();            
+            _client = new HttpClient();
+            if (_cachedImage == null)
+            {
+                var stream = _client.GetStreamAsync(_url).GetAwaiter().GetResult();
+                _cachedImage = SKBitmap.Decode(stream);
+            }
+
         }
 
         public override async Task<SKBitmap> GetImage(int width, int height)
@@ -28,6 +34,11 @@ namespace OpenGui.Values
             }
 
             return _cachedImage;
+        }
+
+        public override bool IsCached(int width, int height)
+        {
+            return _cachedImage != null;
         }
 
         ~WebImageSource()

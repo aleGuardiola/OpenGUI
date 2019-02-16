@@ -15,5 +15,11 @@ namespace OpenGui.Values
         /// <param name="height">The height where the image is going to render.</param>
         /// <returns></returns>
         public abstract Task<SKBitmap> GetImage(int width, int height);
+
+        /// <summary>
+        /// Return true if the bitmap is cached in the memory.
+        /// </summary>
+        public abstract bool IsCached(int width, int height);
+        
     }
 }
