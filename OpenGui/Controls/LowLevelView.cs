@@ -27,6 +27,18 @@ namespace OpenGui.Controls
 
         float _lastZ;
         
+        public Window Window
+        {
+            get;
+            private set;
+        }
+
+        public bool IsAttachedToWindows
+        {
+            get => GetValue<bool>();
+            private set => SetValue<bool>(value);
+        }
+
         /// <summary>
         /// Get or set the width used to draw, if not set Width property will be used
         /// </summary>
@@ -93,8 +105,11 @@ namespace OpenGui.Controls
         /// </summary>
         public float Depth { get => GetValue<float>(); set => SetValue<float>(value); }
 
+        public event EventHandler AttachedToWindow;
+
         public LowLevelView()
         {
+            IsAttachedToWindows = false;
             modelProvider = GetModelProvider();
             _texture = new Texture();
             _transformableObject = new ViewTransformableObject(modelProvider);
@@ -109,6 +124,14 @@ namespace OpenGui.Controls
             SetValue<float>(nameof(X), ReactiveObject.LAYOUT_VALUE, 0);
             SetValue<float>(nameof(Y), ReactiveObject.LAYOUT_VALUE, 0);
             SetValue<float>(nameof(Z), ReactiveObject.LAYOUT_VALUE, 0);
+        }
+
+        public virtual void AttachWindow(Window window)
+        {
+            CheckThread();
+            Window = window;
+            IsAttachedToWindows = true;
+            AttachedToWindow?.Invoke(this, new EventArgs());
         }
 
         /// <summary>
@@ -187,6 +210,7 @@ namespace OpenGui.Controls
 
         protected void ForzeDraw()
         {
+            CheckThread();
             forzeDraw = true;
         }
 

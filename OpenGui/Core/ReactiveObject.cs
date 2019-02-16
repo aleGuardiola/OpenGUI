@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 
 namespace OpenGui.Core
 {
@@ -15,10 +16,19 @@ namespace OpenGui.Core
         public const int ANIMATION_VALUE = 3;
 
         Dictionary<string, Property> _properties;
+        private Thread _threadWhereCreated;
 
         public ReactiveObject()
         {
             _properties = new Dictionary<string, Property>();
+            _threadWhereCreated = Thread.CurrentThread;
+        }
+
+        public void CheckThread()
+        {
+            var runningThread = Thread.CurrentThread;
+            if (runningThread != _threadWhereCreated)
+                throw new InvalidOperationException("Trying to change property in a different thread.");            
         }
 
         /// <summary>
@@ -38,6 +48,7 @@ namespace OpenGui.Core
         /// <param name="priority">The priority of the value.</param>
         public void SetValue<T>(string propertyName, int priority, T value)
         {
+            CheckThread();
             var type = typeof(T);
             var property = GetOrCreateProperty(propertyName, type);
 
@@ -51,6 +62,7 @@ namespace OpenGui.Core
         /// <param name="memberName">property name</param>
         protected void SetValue<T>(T value, [CallerMemberName] string memberName = "")
         {
+            CheckThread();
             var type = typeof(T);
             var property = GetOrCreateProperty(memberName, type);
 

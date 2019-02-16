@@ -4,8 +4,10 @@ using OpenTK;
 using OpenTK.Graphics.ES20;
 using OpenTK.Platform;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 
 namespace OpenGui.GUICore
 {
@@ -29,7 +31,28 @@ namespace OpenGui.GUICore
         //z position where objects dimensions are seen as pixels in the screen
         private float _depthZ;
 
-        public ViewContainer Root { get; set; }
+        private Thread _uiThread;
+        private ConcurrentQueue<Action> _actionsQueue;
+
+        private ViewContainer _root;
+
+        public ViewContainer Root
+        {
+            get => _root;
+            set
+            {
+                if (Thread.CurrentThread != _uiThread)
+                    throw new InvalidOperationException("Trying to change property in a different thread.");
+
+                value.AttachWindow(this);
+                _root = value;
+            }
+        }
+
+        public Thread UiThread
+        {
+            get => _uiThread;
+        }
 
         /// <summary>
         /// Get the camera used.
@@ -55,7 +78,9 @@ namespace OpenGui.GUICore
             _gameWindow = gameWindow;
             _gameWindow.Load += _gameWindow_Load;
             _gameWindow.RenderFrame += _gameWindow_RenderFrame;
-            _gameWindow.Resize += _gameWindow_Resize;            
+            _gameWindow.Resize += _gameWindow_Resize;
+            _actionsQueue = new ConcurrentQueue<Action>();
+            _uiThread = Thread.CurrentThread;
         }
 
         //this function is called when the window finish load
@@ -88,6 +113,14 @@ namespace OpenGui.GUICore
         //this function is called every time a frame has to be draw
         private void _gameWindow_RenderFrame(object sender, FrameEventArgs e)
         {
+            //execute actions on the uiThread
+            while(_actionsQueue.Count > 0)
+            {
+                Action action;
+                if (_actionsQueue.TryDequeue(out action))
+                    action.Invoke();
+            }
+
             //Print deltatime
             Console.Clear();
             Console.WriteLine("{0} x {1}", _gameWindow.Width, _gameWindow.Height);
@@ -137,6 +170,17 @@ namespace OpenGui.GUICore
             _depthZ = viewPortHeight / (2.0f * (float)Math.Tan(fieldOfAngleRadians / 2.0f));
 
             return Matrix4.CreatePerspectiveFieldOfView(fieldOfAngleRadians, viewPortWidth / viewPortHeight, 0.1f, viewPortHeight * 2.0f);            
+        }
+
+        public void RunInUIThread(Action action)
+        {
+            if(Thread.CurrentThread == _uiThread)
+            {
+                action.Invoke();
+                return;
+            }
+
+            _actionsQueue.Enqueue(action);
         }
 
     }

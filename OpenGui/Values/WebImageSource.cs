@@ -10,13 +10,8 @@ namespace OpenGui.Values
     public class WebImageSource : ImageSource
     {
         HttpClient _client;
-        SKBitmap _placeholder;
+        SKBitmap _cachedImage = null;
         string _url;
-
-        public WebImageSource(string url, SKBitmap placeholder) : this(url)
-        {
-            _placeholder = placeholder;            
-        }
 
         public WebImageSource(string url)
         {
@@ -26,15 +21,13 @@ namespace OpenGui.Values
 
         public override async Task<SKBitmap> GetImage(int width, int height)
         {
-            var stream = await _client.GetStreamAsync(_url);
-            var bitmap = SKBitmap.Decode(stream);
-            return bitmap;
-        }
+            if(_cachedImage == null)
+            {
+                var stream = await _client.GetStreamAsync(_url);
+                _cachedImage = SKBitmap.Decode(stream);
+            }
 
-        public override bool TryGetImagePlaceholder(int width, int height, out SKBitmap placeholder)
-        {
-            placeholder = _placeholder;
-            return placeholder != null;
+            return _cachedImage;
         }
 
         ~WebImageSource()

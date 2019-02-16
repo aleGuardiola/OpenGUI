@@ -1,5 +1,6 @@
 ﻿using OpenGui.Collection;
 using OpenGui.Core;
+using OpenGui.GUICore;
 using OpenGui.Values;
 using OpenTK;
 using System;
@@ -25,7 +26,7 @@ namespace OpenGui.Controls
 
         public ViewContainer()
         {
-            _children = new List<View>();
+            _children = new ChildrenList(this);
             SetValue<Align>(nameof(ContentAlign), ReactiveObject.LAYOUT_VALUE, Align.Center);
         }
     }
@@ -52,7 +53,13 @@ namespace OpenGui.Controls
         }
 
         protected abstract void OnLayout();
-        
+
+        public override void AttachWindow(Window window)
+        {
+            base.AttachWindow(window);
+            ((ChildrenList)base.Children).AttachWindow(window);
+        }
+
         public override void GLDraw(Matrix4 perspectiveProjection, Matrix4 view, RectangleF clipRectangle, int windowWidth, int windowHeight, float cameraZ)
         {
             //draw itself

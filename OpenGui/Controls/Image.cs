@@ -13,9 +13,9 @@ namespace OpenGui.Controls
     {
         SubscriptionPool subscriptionPool = new SubscriptionPool();
         SKBitmap imageToRender;
-        
+        float lastWidth = 0, lastHeight = 0;
 
-        public ImageSource ImageSource
+        public ImageSource Source
         {
             get => GetValue<ImageSource>();
             set => SetValue<ImageSource>(value);
@@ -36,33 +36,51 @@ namespace OpenGui.Controls
         public Image()
         {
             //subscribe to changes in the image source
-            subscriptionPool.Add( GetObservable<ImageSource>(nameof(ImageSource)).Subscribe(imageSourceChanged) );
+            subscriptionPool.Add( GetObservable<ImageSource>(nameof(Source)).Subscribe(imageSourceChanged) );
             subscriptionPool.Add(GetObservable<ImageMode>(nameof(ImageMode)).Subscribe((mode) => ForzeDraw()));
 
             SetValue<bool>(nameof(IsLoading), ReactiveObject.LAYOUT_VALUE, false);
             SetValue<ImageMode>(nameof(ImageMode), ReactiveObject.LAYOUT_VALUE, ImageMode.Fit);
 
+            AttachedToWindow += Image_AttachedToWindow;
+        }
 
+        private void Image_AttachedToWindow(object sender, EventArgs e)
+        {
+            imageSourceChanged(Source);
         }
 
         private void imageSourceChanged(ImageSource source)
         {
-            if(!source.TryGetImagePlaceholder((int)Width, (int)Height, out imageToRender))            
-                imageToRender = new SKBitmap(0,0);
+            if (!IsAttachedToWindows)
+                return;
+
+            imageToRender = new SKBitmap(0,0);
 
             ForzeDraw();
 
+            IsLoading = true;
+
             Task.Run(async () =>
             {
-                IsLoading = true;
-                imageToRender = await source.GetImage((int)Width, (int)Height);
-                IsLoading = false;
-                ForzeDraw();
+                var image = await source.GetImage((int)Width, (int)Height);
+
+                Window.RunInUIThread(() =>
+                {
+                    imageToRender = image;
+
+                    IsLoading = false;
+
+                    ForzeDraw();
+                });
             });            
         }
 
         protected override (float measuredWidth, float measuredHeight) OnMesure(float widthSpec, float heightSpec, MeasureSpecMode mode)
         {
+            var imageWidth = imageToRender?.Width ?? 0;
+            var imageHeight = imageToRender?.Height ?? 0;
+
             var minWidth = MinWidth;
             var minHeight = MinHeight;
 
@@ -77,22 +95,22 @@ namespace OpenGui.Controls
                     break;
                 case MeasureSpecMode.AtMost:
                     //calculate width                    
-                    width = Math.Max(PaddingLeft + PaddingRight + imageToRender.Width, minWidth);
+                    width = Math.Max(PaddingLeft + PaddingRight + imageWidth, minWidth);
                     if (width > widthSpec)
                         width = Math.Max(widthSpec, minWidth);
 
                     //calculate height
-                    height = Math.Max(PaddingTop + PaddingBottom + imageToRender.Height, minHeight);
+                    height = Math.Max(PaddingTop + PaddingBottom + imageHeight, minHeight);
                     if (height > heightSpec)
                         height = Math.Max(heightSpec, minHeight);
                     break;
                 case MeasureSpecMode.Unspecified:
 
                     //calculate width
-                    width = Math.Max(PaddingLeft + PaddingRight + imageToRender.Width, minWidth);
+                    width = Math.Max(PaddingLeft + PaddingRight + imageWidth, minWidth);
 
                     //calculate height
-                    height = Math.Max(PaddingTop + PaddingBottom + imageToRender.Height, minHeight);
+                    height = Math.Max(PaddingTop + PaddingBottom + imageHeight, minHeight);
                     break;
             }
 
@@ -105,6 +123,9 @@ namespace OpenGui.Controls
 
             if (imageToRender == null)
                 return;
+
+            if (lastWidth != width || lastHeight != height)
+                imageSourceChanged(Source);
 
             var destRect = new SKRect(PaddingLeft, PaddingTop, width - PaddingRight, height - PaddingBottom);
 
@@ -132,6 +153,10 @@ namespace OpenGui.Controls
                 }
 
                 canvas.DrawBitmap(imageToRender, srcRect, destRect, imagePaint);
+
+                lastWidth = width;
+                lastHeight = height;
+
             }
 
         }

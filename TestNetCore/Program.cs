@@ -36,8 +36,12 @@ namespace TestNetCore
                    //},
                    new OpenGui.Controls.Image()
                    {
+                       HorizontalAligment = HorizontalAligment.Stretch,
+                       VerticalAligment = VerticalAligment.Stretch,
+                       Width = 500,
+                       Height = 500,
                        ImageMode = ImageMode.Fit,
-                       ImageSource = new WebImageSource(@"https://wallpaperbrowse.com/media/images/3848765-wallpaper-images-download.jpg"),
+                       Source = new WebImageSource(@"https://wallpaperbrowse.com/media/images/3848765-wallpaper-images-download.jpg"),
                        Background = new DrawableColor(Color.Wheat)                       
                    }
                 }
