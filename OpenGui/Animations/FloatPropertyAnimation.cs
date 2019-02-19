@@ -1,4 +1,5 @@
-﻿using OpenGui.Core;
+﻿using OpenGui.Animations.Interplators;
+using OpenGui.Core;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -6,17 +7,15 @@ using System.Text;
 namespace OpenGui.Animations
 {
     public class FloatPropertyAnimation : PropertyAnimation<float>
-    {
-        public static Func<float, float> Linear = (time) => time;
-
-        Func<float, float> _changeFunc;
+    {        
+        Interpolator _interpolator;
         float _start;
         float _end;
 
-        public FloatPropertyAnimation(ReactiveObject obj, string property, int duration, float start, float end, Func<float, float>changeFunc)
+        public FloatPropertyAnimation(ReactiveObject obj, string property, int duration, float start, float end, Interpolator interpolator)
             : base(obj, duration, property)
         {
-            _changeFunc = changeFunc;
+            _interpolator = interpolator;
             _start = start;
             _end = end;
         }
@@ -29,7 +28,7 @@ namespace OpenGui.Animations
 
         protected override float GetScaleValue(float timeScale)
         {
-            return _changeFunc(timeScale);
+            return _interpolator.GetValue(timeScale);
         }
     }
 }

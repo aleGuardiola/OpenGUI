@@ -21,7 +21,7 @@ namespace OpenGui.GUICore
         public int MouseDeltaY { get => _mouseDeltaY; }
         
         public InputManager(IGameWindow gameWindows)
-        {
+        {            
             //13 buttons in the mouse
             _isMouseButtonPressed = new bool[13];
 
@@ -33,7 +33,7 @@ namespace OpenGui.GUICore
             gameWindows.MouseLeave += GameWindows_MouseLeave;
             gameWindows.MouseMove += GameWindows_MouseMove;
             gameWindows.MouseUp += GameWindows_MouseUp;
-            gameWindows.MouseWheel += GameWindows_MouseWheel;                 
+            gameWindows.MouseWheel += GameWindows_MouseWheel;            
         }
 
         public bool GetMouseButtonState(MouseButton button)
@@ -71,7 +71,7 @@ namespace OpenGui.GUICore
 
         private void GameWindows_MouseDown(object sender, OpenTK.Input.MouseButtonEventArgs e)
         {
-            _isMouseButtonPressed[(int)e.Button] = e.IsPressed;
+            _isMouseButtonPressed[(int)e.Button] = e.IsPressed; 
         }
 
         private void GameWindows_KeyUp(object sender, OpenTK.Input.KeyboardKeyEventArgs e)

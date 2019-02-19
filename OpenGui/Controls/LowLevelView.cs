@@ -18,7 +18,7 @@ namespace OpenGui.Controls
         ViewTransformableObject _transformableObject;
         IModelProvider modelProvider;
         Texture _texture;
-                
+
         //last rendered values
         bool forzeDraw = false;
         float _lastWidth;
@@ -26,7 +26,7 @@ namespace OpenGui.Controls
         float _lastDepth;
 
         float _lastZ;
-        
+
         public Window Window
         {
             get;
@@ -44,8 +44,8 @@ namespace OpenGui.Controls
         /// </summary>
         public float CalculatedWidth
         {
-            get;
-            private set;
+            get => GetValue<float>();
+            set => SetValue<float>(value);
         }
 
         /// <summary>
@@ -53,8 +53,8 @@ namespace OpenGui.Controls
         /// </summary>
         public float CalculatedHeight
         {
-            get;
-            private set;
+            get => GetValue<float>();
+            set => SetValue<float>(value);
         }
 
         /// <summary>
@@ -95,6 +95,17 @@ namespace OpenGui.Controls
         /// </summary>
         public float Rotation { get => GetValue<float>(); set => SetValue<float>(value); }
 
+
+        /// <summary>
+        /// get or set the height of the view
+        /// </summary>
+        public float ScaleX { get => GetValue<float>(); set => SetValue<float>(value); }
+
+        /// <summary>
+        /// get or set the rotation of the view.
+        /// </summary>
+        public float ScaleY { get => GetValue<float>(); set => SetValue<float>(value); }
+
         /// <summary>
         /// get or set the rotationY of the view.
         /// </summary>
@@ -109,7 +120,7 @@ namespace OpenGui.Controls
         /// get or set the minimum width of the view.
         /// </summary>
         public float MinWidth { get => GetValue<float>(); set => SetValue<float>(value); }
-        
+
         /// <summary>
         /// get or set the minimum height of the view.
         /// </summary>
@@ -135,7 +146,7 @@ namespace OpenGui.Controls
             SetValue<float>(nameof(Depth), ReactiveObject.LAYOUT_VALUE, 1);
             SetValue<float>(nameof(MinWidth), ReactiveObject.LAYOUT_VALUE, 25);
             SetValue<float>(nameof(MinHeight), ReactiveObject.LAYOUT_VALUE, 25);
-            
+
             SetValue<float>(nameof(X), ReactiveObject.LAYOUT_VALUE, 0);
             SetValue<float>(nameof(Y), ReactiveObject.LAYOUT_VALUE, 0);
             SetValue<float>(nameof(Z), ReactiveObject.LAYOUT_VALUE, 0);
@@ -143,6 +154,9 @@ namespace OpenGui.Controls
             SetValue<float>(nameof(Rotation), ReactiveObject.LAYOUT_VALUE, 0);
             SetValue<float>(nameof(RotationY), ReactiveObject.LAYOUT_VALUE, 0);
             SetValue<float>(nameof(RotationZ), ReactiveObject.LAYOUT_VALUE, 0);
+
+            SetValue<float>(nameof(ScaleX), ReactiveObject.LAYOUT_VALUE, 1f);
+            SetValue<float>(nameof(ScaleY), ReactiveObject.LAYOUT_VALUE, 1f);
         }
 
         public virtual void AttachWindow(Window window)
@@ -161,7 +175,7 @@ namespace OpenGui.Controls
         {
             return new ViewModelProvider();
         }
-                
+
         /// <summary>
         /// Calculate the size of the view.
         /// </summary>
@@ -193,8 +207,8 @@ namespace OpenGui.Controls
         /// <param name="height">The height to render</param>
         private void SetMeasuredSize(float width, float height)
         {
-            CalculatedWidth = width;
-            CalculatedHeight = height;
+            SetValue<float>(nameof(CalculatedWidth), ReactiveObject.LAYOUT_VALUE, width);
+            SetValue<float>(nameof(CalculatedHeight), ReactiveObject.LAYOUT_VALUE, height);            
         }
 
         /// <summary>
@@ -202,7 +216,7 @@ namespace OpenGui.Controls
         /// </summary>
         /// <param name="perspectiveProjection">The projection matrix.</param>
         /// <param name="view">The view matrix.</param>
-        public virtual void GLDraw(Matrix4 perspectiveProjection, Matrix4 view, RectangleF clipRectangle, int windowWidth, int windowHeight, float cameraZ)
+        public virtual void GLDraw(Matrix4 perspectiveProjection, Matrix4 view, RectangleF clipRectangle, int windowWidth, int windowHeight, float cameraZ, SKBitmap cachedBitmap = null)
         {
             var viewWidth = CalculatedWidth;
             var viewHeight = CalculatedHeight;
@@ -211,22 +225,22 @@ namespace OpenGui.Controls
             var viewz = Z;
             var viewDepth = Depth;
 
-            var x = (viewx - (windowWidth/2)) + (viewWidth/2.0f);
-            var y = (viewy + (windowHeight/2) ) - (viewHeight/2.0f);
-            var z = (viewz * cameraZ) / 100;
+            var x = (viewx - (windowWidth / 2)) + (viewWidth / 2.0f);
+            var y = (viewy + (windowHeight / 2)) - (viewHeight / 2.0f);
+            var z = (viewz * cameraZ) / 100;                       
 
             var model = Matrix4.Identity;
-            model *= Matrix4.CreateScale(viewWidth/2.0f, viewHeight/2.0f, viewDepth/2.0f);
-            model *= Matrix4.CreateRotationZ(MathHelper.DegreesToRadians(Rotation)); 
-            model *= Matrix4.CreateRotationY(MathHelper.DegreesToRadians(RotationY)); 
-            model *= Matrix4.CreateRotationX(MathHelper.DegreesToRadians(RotationZ)); 
+            model *= Matrix4.CreateScale((viewWidth / 2.0f) * ScaleX, (viewHeight / 2.0f) * ScaleY, (viewDepth / 2.0f));
+            model *= Matrix4.CreateRotationZ(MathHelper.DegreesToRadians(Rotation));
+            model *= Matrix4.CreateRotationY(MathHelper.DegreesToRadians(RotationY));
+            model *= Matrix4.CreateRotationX(MathHelper.DegreesToRadians(RotationZ));
             model *= Matrix4.CreateTranslation(x, y, z);
 
             _transformableObject.TransformationMatrix = model;
 
             _transformableObject.ClipRectangle = clipRectangle;
 
-            GLDraw(perspectiveProjection, view);
+            GLDraw(perspectiveProjection, view, cachedBitmap);
         }
 
         protected void ForzeDraw()
@@ -244,6 +258,15 @@ namespace OpenGui.Controls
             canvas.Clear(SKColors.White);
         }
 
+        public void GLDraw(Matrix4 perspectiveProjection, Matrix4 view, SKBitmap cachedBitmap = null)
+        {
+            var texture = GetTexture(CalculatedWidth, CalculatedHeight, cachedBitmap);
+
+            texture.StartUsingTexture();
+            _transformableObject.Draw(perspectiveProjection, view);
+            texture.StopUsingTexture();
+        }
+
         public void GLDraw(Matrix4 perspectiveProjection, Matrix4 view)
         {
             var texture = GetTexture(CalculatedWidth, CalculatedHeight);
@@ -251,57 +274,90 @@ namespace OpenGui.Controls
             texture.StartUsingTexture();
             _transformableObject.Draw(perspectiveProjection, view);
             texture.StopUsingTexture();
+
         }
 
         //return the texture to draw
-        private Texture GetTexture(float _width, float _height)
+        private Texture GetTexture(float width, float height, SKBitmap cachedBitmap = null)
         {
             if (!_texture.IsLoaded)
             {
-                using (var bitmap = GetBitmap(_width, _height))
-                    _texture.LoadTexture(bitmap);
+                if(cachedBitmap == null)
+                {
+                    using (var bitmap = GetBitmap(width, height))
+                        _texture.LoadTexture(bitmap, (int)width, (int)height);
+                }
+                else
+                {
+                    var bitmap = GetBitmap(width, height, cachedBitmap);
+                    _texture.LoadTexture(bitmap, (int)width, (int)height);
+                }
             }
             else
             {
                 //if is forzed to draw with same size
-                if (forzeDraw && _width == _lastWidth && _height == _lastHeight)
+                if (forzeDraw && width == _lastWidth && height == _lastHeight)
                 {
-                    using (var bitmap = GetBitmap(_width, _height))
-                        _texture.ChangeBitmapSameSize(bitmap);                        
+                    if (cachedBitmap == null)
+                    {
+                        using (var bitmap = GetBitmap(width, height))
+                            _texture.ChangeBitmapSameSize(bitmap, (int)width, (int)height);
+                    }
+                    else
+                    {
+                        var bitmap = GetBitmap(width, height, cachedBitmap);
+                        _texture.ChangeBitmapSameSize(bitmap, (int)width, (int)height);
+                    }
                 }
                 else
                 //check if we have to update the bitmap
-                if (_width > _lastWidth || _height > _lastHeight)
+                if (width > _lastWidth || height > _lastHeight)
                 {
-                    using (var bitmap = GetBitmap(_width, _height))
-                        _texture.ChangeBitmap(bitmap);
+                    if (cachedBitmap == null)
+                    {
+                        using (var bitmap = GetBitmap(width, height))
+                            _texture.ChangeBitmap(bitmap, (int)width, (int)height);
+                    }
+                    else
+                    {
+                        var bitmap = GetBitmap(width, height, cachedBitmap);
+                        _texture.ChangeBitmap(bitmap, (int)width, (int)height);
+                    }
                 }
                 else
                 {
-                    var newAspectRatio = _width / _height;
+                    var newAspectRatio = width / height;
                     var lastAspectRatio = _lastWidth / _lastHeight;
                     if (newAspectRatio != lastAspectRatio)
                     {
-                        using (var bitmap = GetBitmap(_width, _height))
-                            _texture.ChangeBitmap(bitmap);
+                        if (cachedBitmap == null)
+                        {
+                            using (var bitmap = GetBitmap(width, height))
+                                _texture.ChangeBitmap(bitmap, (int)width, (int)height);
+                        }
+                        else
+                        {
+                            var bitmap = GetBitmap(width, height, cachedBitmap);
+                            _texture.ChangeBitmap(bitmap, (int)width, (int)height);
+                        }
                     }
                 }
             }
 
-            _lastWidth = _width;
-            _lastHeight = _height;
+            _lastWidth = width;
+            _lastHeight = height;
             forzeDraw = false;
 
             return _texture;
         }
 
         //return the bitmap used by the texture
-        private SKBitmap GetBitmap(float _width, float _height)
+        private SKBitmap GetBitmap(float _width, float _height, SKBitmap cachedBitmap = null)
         {
-            var bitmap = new SKBitmap(new SKImageInfo((int)_width, (int)_height, SKColorType.Rgba8888));
+            var bitmap = cachedBitmap ?? new SKBitmap(new SKImageInfo((int)_width, (int)_height, SKColorType.Rgba8888));
             using (var canvas = new SKCanvas(bitmap))
-            {                
-                DrawTexture(canvas, bitmap.Width, bitmap.Height);                
+            {
+                DrawTexture(canvas, bitmap.Width, bitmap.Height);
             }
 
             return bitmap;
@@ -309,8 +365,8 @@ namespace OpenGui.Controls
 
         ~LowLevelView()
         {
-            if(_texture.IsLoaded)
-              _texture.Dispose();
+            if (_texture.IsLoaded)
+                _texture.Dispose();
         }
 
     }

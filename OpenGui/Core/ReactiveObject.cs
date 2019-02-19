@@ -1,4 +1,5 @@
 ﻿using OpenGui.Exceptions;
+using OpenGui.Helpers;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -15,6 +16,8 @@ namespace OpenGui.Core
         public const int USER_VALUE = 2;
         public const int ANIMATION_VALUE = 3;
 
+        private SubscriptionPool _subscriptionPool = new SubscriptionPool();
+
         Dictionary<string, Property> _properties;
         private Thread _threadWhereCreated;
 
@@ -29,6 +32,61 @@ namespace OpenGui.Core
             var runningThread = Thread.CurrentThread;
             if (runningThread != _threadWhereCreated)
                 throw new InvalidOperationException("Trying to change property in a different thread.");            
+        }
+
+        public void Bind<T>(string propertyName, IObservable<T> observable)
+        {
+            _subscriptionPool.Add(observable.Subscribe((next) =>
+            {
+                SetValue<T>(next, propertyName);
+            }));
+        }
+
+        public void BindTwoWay<T>( string propertyName, IObservable<T> observable, object obj, string property )
+        {
+            {
+                var prop = obj.GetType().GetProperty(property);
+
+                bool changed  = false;
+                _subscriptionPool.Add(observable.Subscribe((next) => {
+                    if (!changed)
+                    {
+                        SetValue<T>(next, propertyName);
+                        changed = true;
+                    }
+                    else
+                        changed = false;
+                }));
+
+                _subscriptionPool.Add(GetObservable<T>(propertyName).Subscribe((next) =>
+                {
+                    if (!changed)
+                    {
+                        prop.SetValue(obj, next);
+                        changed = true;
+                    }
+                    else
+                        changed = false; 
+                }));
+            }           
+        }
+
+        /// <summary>
+        /// Try to delete a value by its priority.
+        /// </summary>
+        /// <param name="propertyName">The name of the property.</param>
+        /// <param name="priority">The priority value to delete</param>
+        /// <returns>Return true if the property exist</returns>
+        public bool TryDeleteValueByPriority(string propertyName, int priority)
+        {
+            Property prop;
+            if (_properties.TryGetValue(propertyName, out prop))
+            {
+                prop.values[priority] = null;
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -259,6 +317,11 @@ namespace OpenGui.Core
 
             }
 
+        }
+
+        ~ReactiveObject()
+        {
+            _subscriptionPool.UnsubscribeAll();
         }
 
     }

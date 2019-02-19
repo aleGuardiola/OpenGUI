@@ -12,6 +12,12 @@ namespace OpenGui.Animations
         public PropertyAnimation(ReactiveObject objectToAnimate, int duration, string property) : base(objectToAnimate, duration)
         {
             _property = property;
+            this.Stop += PropertyAnimation_Stop;
+        }
+
+        private void PropertyAnimation_Stop(object sender, EventArgs e)
+        {
+            ReactiveObject.TryDeleteValueByPriority(_property, ReactiveObject.ANIMATION_VALUE);
         }
 
         protected abstract float GetScaleValue(float timeScale);
@@ -28,7 +34,7 @@ namespace OpenGui.Animations
         protected override void UpdateValue(float value)
         {
             var valueConverted = ConvertScaleValue(value);
-            ReactiveObject.SetValue<T>(_property, ReactiveObject.ANIMATION_VALUE, valueConverted);
+            ReactiveObject.SetValue<T>(_property, ReactiveObject.ANIMATION_VALUE, valueConverted);            
         }
     }
 }

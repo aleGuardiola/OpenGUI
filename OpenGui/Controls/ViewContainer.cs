@@ -3,6 +3,8 @@ using OpenGui.Core;
 using OpenGui.GUICore;
 using OpenGui.Values;
 using OpenTK;
+using Portable.Xaml.Markup;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +12,7 @@ using System.Text;
 
 namespace OpenGui.Controls
 {
+    [ContentPropertyAttribute(nameof(ViewContainer.Children))]
     public abstract class ViewContainer : View
     {
         public bool IsForceMeasure
@@ -19,14 +22,21 @@ namespace OpenGui.Controls
         }
 
         IList<View> _children;
+
         public IList<View> Children
         {
             get => _children;
         }
-
+        
         public ViewContainer()
         {
             _children = new ChildrenList(this);
+            IsForceMeasure = true;
+        }
+
+        public ViewContainer(int maxItems)
+        {
+            _children = new ChildrenList(this, maxItems);
             IsForceMeasure = true;
         }
 
@@ -48,7 +58,23 @@ namespace OpenGui.Controls
             }
             IsForceMeasure = false;
         }
-        
+
+        public override void OnClick(ClickEventArgs e)
+        {
+            for(int i = 0; i < Children.Count; i++)
+            {
+                var child = Children[i];
+                if(e.X >= child.X && e.X <= child.X + child.CalculatedWidth)
+                {
+                    child.OnClick(e);
+                    return;
+                }
+            }
+
+            if(e.Propagate)
+             base.OnClick(e);
+        }
+
         protected override (float measuredWidth, float measuredHeight) OnMesure(float widthSpec, float heightSpec, MeasureSpecMode mode)
         {
             OnLayout();
@@ -69,20 +95,21 @@ namespace OpenGui.Controls
             IsForceMeasure = true;
         }
 
-        public override void GLDraw(Matrix4 perspectiveProjection, Matrix4 view, RectangleF clipRectangle, int windowWidth, int windowHeight, float cameraZ)
+        public override void GLDraw(Matrix4 perspectiveProjection, Matrix4 view, RectangleF clipRectangle, int windowWidth, int windowHeight, float cameraZ, SKBitmap cachedBitmap = null)
         {
             //draw itself
-            base.GLDraw(perspectiveProjection, view, clipRectangle, windowWidth, windowHeight, cameraZ);
+            base.GLDraw(perspectiveProjection, view, clipRectangle, windowWidth, windowHeight, cameraZ, cachedBitmap);
 
             //draw each children ordered by z
             foreach (var child in Children.OrderBy((c) => c.Z))
             {
-                child.GLDraw(perspectiveProjection, view, clipRectangle, windowWidth, windowHeight, cameraZ);
+                child.GLDraw(perspectiveProjection, view, clipRectangle, windowWidth, windowHeight, cameraZ, cachedBitmap);
             }
         }
 
     }
 
+    [ContentPropertyAttribute(nameof(ViewContainer.Children))]
     public abstract class ViewContainer<T> : ViewContainer where T : View
     {        
         /// <summary>
@@ -92,11 +119,15 @@ namespace OpenGui.Controls
         {
             get => (IList<T>)base.Children;
         }
-                
+
+        public ViewContainer(int maxItems) : base(maxItems)
+        {
+           
+        }
+
         public ViewContainer()
         {
             
         }
-
     }
 }

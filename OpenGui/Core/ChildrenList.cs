@@ -13,32 +13,52 @@ namespace OpenGui.Core
         Window _window = null;
         List<View> _views;
         ViewContainer _container;
+        int _maxItems;
 
         public View this[int index] { get => _views[index]; set => _views[index]=value; }
 
         public int Count => _views.Count;
 
         public bool IsReadOnly => false;
+               
+
+        public void BindingContextChanged(object bindingContext)
+        {
+            CheckThread();
+            for (int i = 0; i < _views.Count; i++)
+            {
+                _views[i].SetValue<object>(nameof(View.BindingContext), ReactiveObject.LAYOUT_VALUE, bindingContext);
+            }
+        }
 
         public void AttachWindow(Window window)
         {
-            CheckThread();            
+            CheckThread();
+            _window = window;
             for (int i = 0; i < _views.Count; i++)
             {
                 _views[i].AttachWindow(window);
             }
         }
 
-        public ChildrenList(ViewContainer container)
+        public ChildrenList(ViewContainer container, int maxItems = -1)
         {
             _container = container ?? throw new NullReferenceException(nameof(container));
             _views = new List<View>();
+            _maxItems = maxItems;
+            _container.GetObservable<object>(nameof(View.BindingContext)).Subscribe(BindingContextChanged);
         }
 
         public void Add(View item)
         {
             CheckThread();
+            if ( _maxItems > -1 && _views.Count >= _maxItems)
+                throw new InvalidOperationException($"This container only admits {_maxItems} number of children.");
+
             item.Parent = _container;
+            if(_container.Exist(nameof(_container.BindingContext)))            
+                item.SetValue<object>(nameof(_container.BindingContext), ReactiveObject.LAYOUT_VALUE, _container.BindingContext);
+             
             _views.Add(item);
             if (_window != null)
                 item.AttachWindow(_window);

@@ -36,7 +36,7 @@ namespace OpenGui.GUICore
         /// Load and create the texture
         /// </summary>
         /// <param name="bitmap"></param>
-        public void LoadTexture(SKBitmap bitmap)
+        public void LoadTexture(SKBitmap bitmap, int width, int height)
         {
             if (_isLoaded)
                 throw new InvalidOperationException("This texture is already initialized");
@@ -50,33 +50,22 @@ namespace OpenGui.GUICore
 
             var p = bitmap.GetPixels();
 
-            //if (5 == 9)
-            //{
-            //    for (int i = 0; i < p.Length; i += 4)
-            //    {
-            //        p[i] = 0;
-            //        p[i + 1] = 255;
-            //        p[i + 2] = 123;
-            //        p[i + 3] = 100;
-            //    }
-            //}
-
             switch (bitmap.ColorType)
             {
                 case SKColorType.Alpha8:
-                    GL.TexImage2D(TextureTarget2d.Texture2D, 0, TextureComponentCount.Alpha, bitmap.Width, bitmap.Height, 0, PixelFormat.Alpha, PixelType.UnsignedByte, p);
+                    GL.TexImage2D(TextureTarget2d.Texture2D, 0, TextureComponentCount.Alpha, width, height, 0, PixelFormat.Alpha, PixelType.UnsignedByte, p);
                     break;
                 case SKColorType.Rgb565:
-                    GL.TexImage2D(TextureTarget2d.Texture2D, 0, TextureComponentCount.Rgb, bitmap.Width, bitmap.Height, 0, PixelFormat.Rgb, PixelType.UnsignedShort, p);
+                    GL.TexImage2D(TextureTarget2d.Texture2D, 0, TextureComponentCount.Rgb, width, height, 0, PixelFormat.Rgb, PixelType.UnsignedShort, p);
                     break;
                 case SKColorType.Argb4444:
-                    GL.TexImage2D(TextureTarget2d.Texture2D, 0, TextureComponentCount.Rgba, bitmap.Width, bitmap.Height, 0, PixelFormat.Rgba, PixelType.UnsignedShort4444, p);
+                    GL.TexImage2D(TextureTarget2d.Texture2D, 0, TextureComponentCount.Rgba, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedShort4444, p);
                     break;
                 case SKColorType.Rgba8888:
-                    GL.TexImage2D(TextureTarget2d.Texture2D, 0, TextureComponentCount.Rgba, bitmap.Width, bitmap.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, p);
+                    GL.TexImage2D(TextureTarget2d.Texture2D, 0, TextureComponentCount.Rgba, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, p);
                     break;
                 default:
-                    GL.TexImage2D(TextureTarget2d.Texture2D, 0, TextureComponentCount.Rgba, bitmap.Width, bitmap.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, p);
+                    GL.TexImage2D(TextureTarget2d.Texture2D, 0, TextureComponentCount.Rgba, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, p);
                     break;
             }
 
@@ -89,10 +78,10 @@ namespace OpenGui.GUICore
         /// Change the texture data.
         /// </summary>
         /// <param name="bitmap">The new data.</param>
-        public void ChangeBitmap(SKBitmap bitmap)
+        public void ChangeBitmap(SKBitmap bitmap, int width, int height)
         {
             GL.BindTexture(TextureTarget.Texture2D, _textureId);
-            GL.TexImage2D(TextureTarget2d.Texture2D, 0, TextureComponentCount.Rgba, bitmap.Width, bitmap.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, bitmap.GetPixels());
+            GL.TexImage2D(TextureTarget2d.Texture2D, 0, TextureComponentCount.Rgba, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, bitmap.GetPixels());
             GL.BindTexture(TextureTarget.Texture2D, 0);
         }
 
@@ -100,7 +89,7 @@ namespace OpenGui.GUICore
         /// Change the data with a same size bitmap, faster than Change Bitmap function
         /// </summary>
         /// <param name="bitmap">The new data.</param>
-        public void ChangeBitmapSameSize(SKBitmap bitmap)
+        public void ChangeBitmapSameSize(SKBitmap bitmap, int width, int height)
         {
             //TODO
 
@@ -108,7 +97,7 @@ namespace OpenGui.GUICore
             //GL.TexSubImage2D(TextureTarget2d.Texture2D, 0, 0, 0, bitmap.Width, bitmap.Height, PixelFormat.Rgba, PixelType.Byte, bitmap.GetPixels());
             //GL.BindTexture(TextureTarget.Texture2D, 0);
 
-            ChangeBitmap(bitmap);
+            ChangeBitmap(bitmap, width, height);
         }
 
         public void StartUsingTexture()

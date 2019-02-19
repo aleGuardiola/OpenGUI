@@ -85,6 +85,24 @@ namespace OpenGui.Controls
             SetValue<FontStyle>(nameof(FontStyle), ReactiveObject.LAYOUT_VALUE, FontStyle.Oblique);
             SetValue<int>(nameof(FontWeight), ReactiveObject.LAYOUT_VALUE, 0);
             SetValue<float>(nameof(TextSkew), ReactiveObject.LAYOUT_VALUE, 0f);
+
+            //force to draw when any of this changed
+            SubscriptionPool.Add(GetObservable<string>(nameof(Text)).Subscribe((next) => ForzeDraw()));
+            SubscriptionPool.Add(GetObservable<Color>(nameof(TextColor)).Subscribe((next) => ForzeDraw()));
+            SubscriptionPool.Add(GetObservable<float>(nameof(TextSize)).Subscribe((next) => ForzeDraw()));
+            SubscriptionPool.Add(GetObservable<TextAlign>(nameof(TextAlign)).Subscribe((next) => ForzeDraw()));
+            SubscriptionPool.Add(GetObservable<float>(nameof(TextScale)).Subscribe((next) => ForzeDraw()));
+            SubscriptionPool.Add(GetObservable<float>(nameof(TextSkew)).Subscribe((next) => ForzeDraw()));
+            SubscriptionPool.Add(GetObservable<Font>(nameof(Font)).Subscribe((next) => ForzeDraw()));
+            SubscriptionPool.Add(GetObservable<FontStyle>(nameof(FontStyle)).Subscribe((next) => ForzeDraw()));
+            SubscriptionPool.Add(GetObservable<int>(nameof(FontWeight)).Subscribe((next) => ForzeDraw()));
+
+        }
+
+        public override void Check()
+        {
+            base.Check();
+            //if()
         }
 
         protected override (float measuredWidth, float measuredHeight) OnMesure(float widthSpec, float heightSpec, MeasureSpecMode mode)

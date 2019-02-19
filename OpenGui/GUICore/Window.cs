@@ -38,7 +38,8 @@ namespace OpenGui.GUICore
 
         private ViewContainer _root;
 
-        private List<FrameRunner> frameRunners = new List<FrameRunner>();
+        private ConcurrentQueue<FrameRunner> newFrameRunners = new ConcurrentQueue<FrameRunner>();
+        private List<FrameRunner> runningFrameRunners = new List<FrameRunner>(); 
 
         public ViewContainer Root
         {
@@ -55,7 +56,7 @@ namespace OpenGui.GUICore
 
         public void AddFrameRunner(FrameRunner runner)
         {
-            frameRunners.Add(runner);
+            newFrameRunners.Enqueue(runner);
         }
 
         public Thread UiThread
@@ -129,14 +130,24 @@ namespace OpenGui.GUICore
                 if (_actionsQueue.TryDequeue(out action))
                     action.Invoke();
             }
+            
+            //remove finished runners
+            runningFrameRunners.Where((r) => r.IsStop()).ToList().ForEach((r) => runningFrameRunners.Remove(r));
+
+            while (newFrameRunners.Count > 0)
+            {
+                FrameRunner runner;
+                if(newFrameRunners.TryDequeue(out runner))
+                {
+                    runner.Initialize();
+                    runningFrameRunners.Add(runner);
+                }
+            }
 
             //execute frame runners
-            foreach(var runner in frameRunners)            
+            foreach(var runner in runningFrameRunners)            
                 runner.Update((float)e.Time);
-
-            //remove finished runners
-            frameRunners.Where((r) => r.Stoped()).ToList().ForEach((r) => frameRunners.Remove(r));
-
+                   
             //Print deltatime
             Console.Clear();
             Console.WriteLine("{0} x {1}", _gameWindow.Width, _gameWindow.Height);
@@ -147,7 +158,7 @@ namespace OpenGui.GUICore
             GL.ClearColor(_backgroundColor);
             GL.Clear(ClearBufferMask.ColorBufferBit);
 
-            _renderManager.RenderFrame(e.Time, _camera.Projection, _camera.View, _inputManager, Root, _gameWindow.Width, _gameWindow.Height, _depthZ);
+            _renderManager.RenderFrame(e.Time, _camera.Projection, _camera.View, _gameWindow, Root, _gameWindow.Width, _gameWindow.Height, _depthZ);
 
             //swap the buffers after everything is rendered
             _gameWindow.SwapBuffers();

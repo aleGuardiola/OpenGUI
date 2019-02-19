@@ -1,0 +1,5 @@
+﻿<CoordinateLayout xmlns="https://github.com/aleGuardiola/OpenGUI">
+    
+    <Label Text="{Bind Path=Name}" TextColor="#ff0000"/>
+ 
+</CoordinateLayout>

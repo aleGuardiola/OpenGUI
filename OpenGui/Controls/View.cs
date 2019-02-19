@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Reflection;
 using System.Text;
+using OpenGui.Animations.Xaml;
 using OpenGui.Core;
 using OpenGui.Graphics;
 using OpenGui.Helpers;
+using OpenGui.MarkupExtensions;
 using OpenGui.Values;
 using OpenTK;
 using SkiaSharp;
@@ -14,7 +18,7 @@ namespace OpenGui.Controls
     {
         string _id;
         string _class;
-        SubscriptionPool _subscriptionPool;
+        protected SubscriptionPool SubscriptionPool;              
 
         /// <summary>
         /// The id of this view
@@ -32,6 +36,30 @@ namespace OpenGui.Controls
         {
             get => _class;
             set => _class = value;
+        }
+
+        public object BindingContext
+        {
+            get => GetValue<object>();
+            set => SetValue<object>(value);
+        }
+
+        public IList<(string proertyView, string property, BindMode mode, Type type)> Bindings
+        {
+            get;
+            private set;
+        }
+
+        public Animation Animation
+        {
+            get => GetValue<Animation>();
+            set => SetValue<Animation>(value);
+        }
+
+        public bool IsAnimating
+        {
+            get => GetValue<bool>();
+            set => SetValue<bool>(value);
         }
 
         public ViewContainer Parent
@@ -152,9 +180,14 @@ namespace OpenGui.Controls
             set => SetValue<HorizontalAligment>(value);
         }
 
+        public event EventHandler<ClickEventArgs> Click;
+
+        private OpenGui.Animations.Animation _animation = null;
+
         public View()
         {
-            _subscriptionPool = new SubscriptionPool();
+            Bindings = new List<(string proertyView, string property, BindMode mode, Type type)>();
+            SubscriptionPool = new SubscriptionPool();
             Parent = null;
 
             SetValue<float>(nameof(RelativeX), ReactiveObject.LAYOUT_VALUE, 0);
@@ -177,15 +210,152 @@ namespace OpenGui.Controls
             SetValue<VerticalAligment>(nameof(VerticalAligment), ReactiveObject.LAYOUT_VALUE,  VerticalAligment.Center );
             SetValue<HorizontalAligment>(nameof(HorizontalAligment), ReactiveObject.LAYOUT_VALUE, HorizontalAligment.Center );
 
-            _subscriptionPool.Add(GetObservable<float>(nameof(Width)).Subscribe((v) => Parent?.ForceMeasure()));
-            _subscriptionPool.Add(GetObservable<float>(nameof(Height)).Subscribe((v) => Parent?.ForceMeasure()));
-            _subscriptionPool.Add(GetObservable<HorizontalAligment>(nameof(HorizontalAligment)).Subscribe((v) => Parent?.ForceMeasure()));
-            _subscriptionPool.Add(GetObservable<VerticalAligment>(nameof(VerticalAligment)).Subscribe((v) => Parent?.ForceMeasure()));
+            SetValue<bool>(nameof(IsAnimating), ReactiveObject.LAYOUT_VALUE, false);
+
+            SubscriptionPool.Add(GetObservable<float>(nameof(Width)).Subscribe((v) => Parent?.ForceMeasure()));
+            SubscriptionPool.Add(GetObservable<float>(nameof(Height)).Subscribe((v) => Parent?.ForceMeasure()));
+            SubscriptionPool.Add(GetObservable<HorizontalAligment>(nameof(HorizontalAligment)).Subscribe((v) => Parent?.ForceMeasure()));
+            SubscriptionPool.Add(GetObservable<VerticalAligment>(nameof(VerticalAligment)).Subscribe((v) => Parent?.ForceMeasure()));
+            SubscriptionPool.Add(GetObservable<bool>(nameof(IsAnimating)).Subscribe(OnNextIsAnimating));
+            SubscriptionPool.Add(GetObservable<object>(nameof(BindingContext)).Subscribe(OnNextBindingContext));
+        }
+
+        public virtual void OnClick(ClickEventArgs e)
+        {
+            Click?.Invoke(this, e);
+        }
+
+        private void OnNextBindingContext(object next)
+        {
+            if (next == null)
+                return;
+
+            var bindMethod = typeof(View).GetMethod("Bind", new[] { typeof(string), typeof(string), });
+            var twoWayBindMethod = typeof(View).GetMethod("BindTwoWay", new[] { typeof(string), typeof(string), });
+
+            MethodInfo genericMethod;
+
+            foreach (var binding in Bindings)
+            {
+                switch(binding.mode)
+                {
+                    case BindMode.OneWay:
+                        genericMethod = bindMethod.MakeGenericMethod(binding.type);
+                        genericMethod.Invoke(this, new object[] { binding.proertyView, binding.property } );    
+                        break;
+
+                    case BindMode.TwoWay:
+                        genericMethod = twoWayBindMethod.MakeGenericMethod(binding.type);
+                        genericMethod.Invoke(this, new object[] { binding.proertyView, binding.property });
+                        break;
+                }
+            }
+        }
+
+        private object GetBindingContext()
+        {
+            var reactiveObj = this;
+            while (!reactiveObj.Exist(nameof(BindingContext))) {
+
+                reactiveObj = reactiveObj.Parent;
+
+                if (reactiveObj == null)
+                    return new object();               
+            }
+
+            return reactiveObj.BindingContext;            
+        }
+
+        public void Bind<T>(string viewProperty, string bindingContextProperty)
+        {
+            var bindingContext = GetBindingContext();
+
+            var prop = bindingContext.GetType().GetProperty(bindingContextProperty);
+            try
+            {
+                SetValue<T>((T)prop.GetValue(bindingContext), viewProperty);
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine($"Error getting value: {e.Message}");
+            }            
+
+            if(bindingContext is INotifyPropertyChanged)
+            {
+                var notifier = (INotifyPropertyChanged)bindingContext;
+                var observable = notifier.GetObservable<T>(bindingContextProperty);
+                Bind(viewProperty, observable);
+            }
+            else if(bindingContext is ReactiveObject )
+            {
+                var reactiveObj = (ReactiveObject)bindingContext;
+                var observable = reactiveObj.GetObservable<T>(bindingContextProperty);
+                Bind(viewProperty, observable);
+            }
+        }
+
+        public void BindTwoWay<T>(string viewProperty, string bindingContextProperty)
+        {
+            var bindingContext = GetBindingContext();
+            
+            var prop = bindingContext.GetType().GetProperty(bindingContextProperty);            
+            try
+            { 
+                SetValue<T>((T)prop.GetValue(bindingContext), viewProperty);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error getting value: {e.Message}");
+            }
+
+            if (bindingContext is INotifyPropertyChanged)
+            {
+                var notifier = (INotifyPropertyChanged)bindingContext;
+                var observable = notifier.GetObservable<T>(bindingContextProperty);
+                BindTwoWay(viewProperty, observable, bindingContext, bindingContextProperty);
+            }
+            else if (bindingContext is ReactiveObject)
+            {
+                var reactiveObj = (ReactiveObject)bindingContext;
+                var observable = reactiveObj.GetObservable<T>(bindingContextProperty);
+                BindTwoWay(viewProperty, observable, bindingContext, bindingContextProperty);
+            }
+        }
+
+        private void OnNextIsAnimating(bool value)
+        {
+            if (!Exist(nameof(Animation)))
+                return;
+
+            if(value)
+            {
+                if(_animation == null || _animation.IsStop())
+                {
+                    _animation = Animation.GetAnimation(this);
+
+                    _animation.Stop += _animation_Stop;
+
+                    Window.AddFrameRunner(_animation);
+                }
+            }
+            else
+            {
+                if(_animation != null && (_animation.IsRunning() || !_animation.IsStop()))
+                {
+                    _animation.ForceStop();
+                }
+            }
+        }
+
+        private void _animation_Stop(object sender, EventArgs e)
+        {
+            _animation = null;
+            IsAnimating = false;
         }
 
         public virtual void Check()
         {
-
+            
         }
 
         protected override (float measuredWidth, float measuredHeight) OnMesure(float widthSpec, float heightSpec, MeasureSpecMode mode)
@@ -236,7 +406,7 @@ namespace OpenGui.Controls
 
         ~View()
         {
-            _subscriptionPool.UnsubscribeAll();
+            SubscriptionPool.UnsubscribeAll();
         }
 
     }

@@ -8,7 +8,6 @@ namespace OpenGui.Animations
     public abstract class Animation : FrameRunner
     {
         int currentDuration;
-        bool stopped = false;
         public int Duration
         {
             get;
@@ -24,15 +23,15 @@ namespace OpenGui.Animations
         {
             currentDuration = 0;
             Duration = durationMilliseconds;
-            ReactiveObject = objectToAnimate;
+            ReactiveObject = objectToAnimate;            
         }
 
         protected abstract float ChangeFunction(int time);
         protected abstract void UpdateValue(float value);
 
-        public override bool Stoped()
+        protected override bool Stoped()
         {
-            return stopped || currentDuration >= Duration;
+            return base.Stoped() || currentDuration >= Duration;
         }
 
         public override void Update(float deltaTime)
@@ -42,9 +41,5 @@ namespace OpenGui.Animations
             UpdateValue(value);
         }
 
-        public void Stop()
-        {
-            stopped = true;
-        }
     }
 }
