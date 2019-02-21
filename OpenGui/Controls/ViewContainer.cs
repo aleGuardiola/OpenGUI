@@ -75,6 +75,23 @@ namespace OpenGui.Controls
              base.OnClick(e);
         }
 
+        public override bool TryGetViewById(string id, out View view)
+        {
+            if(!base.TryGetViewById(id, out view))
+            {
+                for( int i = 0; i < Children.Count; i++ )
+                {
+                    var child = Children[i];
+                    if (child.TryGetViewById(id, out view))
+                        return true;
+                }
+                                
+                return false;
+            }
+
+            return true;
+        }
+
         protected override (float measuredWidth, float measuredHeight) OnMesure(float widthSpec, float heightSpec, MeasureSpecMode mode)
         {
             OnLayout();

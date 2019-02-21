@@ -220,6 +220,29 @@ namespace OpenGui.Controls
             SubscriptionPool.Add(GetObservable<object>(nameof(BindingContext)).Subscribe(OnNextBindingContext));
         }
 
+        public virtual bool TryGetViewById(string id, out View view)
+        {
+            if(Id == id)
+            {
+                view = this;
+                return true;
+            }
+
+            view = null;
+
+            return false;
+        }
+
+        public T GetViewById<T>(string id) where T : View
+        {
+            View result;
+
+            if (!TryGetViewById(id, out result ))            
+                throw new Exception($"View with id {id} cannot be found.");
+
+            return result as T;
+        }
+
         public virtual void OnClick(ClickEventArgs e)
         {
             Click?.Invoke(this, e);

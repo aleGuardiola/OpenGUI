@@ -1,4 +1,6 @@
-﻿using OpenGui.App;
+﻿using OpenGui.Animations.Interplators;
+using OpenGui.Animations.Xaml;
+using OpenGui.App;
 using OpenGui.Controls;
 using OpenGui.Graphics;
 using OpenGui.Values;
@@ -15,6 +17,8 @@ namespace TestNetCore.TestComponent
     )]
     public class Test : Component
     {
+        Label label;
+
         public string Name
         {
             get => GetValue<string>();
@@ -28,12 +32,30 @@ namespace TestNetCore.TestComponent
 
         protected override void ViewCreated()
         {
-            Children[0].Click += Test_Click;
+            label = GetViewById<Label>("text");
+
+            label.Animation = new ParallelAnimation()
+            {
+                Animations = {
+                new FloatPropertyAnimation()
+                {
+                     Duration = 5000,
+                     StartValue = 0,
+                     EndValue = 500,
+                     Interpolator = new BounceInterpolator(),
+                     Property = "X"
+                }
+                }
+            };
+
+            label.IsAnimating = true;
+
+            label.Click += Test_Click;
         }
 
         private void Test_Click(object sender, OpenGui.Core.ClickEventArgs e)
         {
-            Name = Name == "Alejandro" ? "Mu" : "Alejandro";
+            Name = Name == "Alejandro" ? "Tini" : "Alejandro";
         }
     }
 }
