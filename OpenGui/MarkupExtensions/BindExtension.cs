@@ -7,7 +7,6 @@ using System.Text;
 
 namespace OpenGui.MarkupExtensions
 {
-    [MarkupExtensionReturnType(typeof(object))]
     public class BindExtension : MarkupExtension
     {
         public string Path
@@ -36,7 +35,11 @@ namespace OpenGui.MarkupExtensions
 
             view.Bindings.Add((property.Name, Path, Mode, property.PropertyType));
 
-            return null;            
+            if (property.PropertyType.IsValueType)
+            {
+                return Activator.CreateInstance(property.PropertyType);
+            }
+            return null;
         }
     }
 }

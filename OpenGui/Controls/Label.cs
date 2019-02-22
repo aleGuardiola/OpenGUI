@@ -87,7 +87,7 @@ namespace OpenGui.Controls
             SetValue<float>(nameof(TextSkew), ReactiveObject.LAYOUT_VALUE, 0f);
 
             //force to draw when any of this changed
-            SubscriptionPool.Add(GetObservable<string>(nameof(Text)).Subscribe((next) => ForzeDraw()));
+            SubscriptionPool.Add(GetObservable<string>(nameof(Text)).Subscribe((next) => { ForzeDraw(); Parent?.ForceMeasure(); }));
             SubscriptionPool.Add(GetObservable<Color>(nameof(TextColor)).Subscribe((next) => ForzeDraw()));
             SubscriptionPool.Add(GetObservable<float>(nameof(TextSize)).Subscribe((next) => ForzeDraw()));
             SubscriptionPool.Add(GetObservable<TextAlign>(nameof(TextAlign)).Subscribe((next) => ForzeDraw()));
@@ -123,7 +123,7 @@ namespace OpenGui.Controls
                     using (var paint = GetTextPaint())
                     {
                         //calculate width                        
-                            width = Math.Max(PaddingLeft + PaddingRight + paint.MeasureText(Text), minWidth);
+                            width = Math.Max(PaddingLeft + PaddingRight + paint.MeasureText(Text.Length == 0 ? "1" : Text), minWidth);
                             if (width > widthSpec)
                                 width = Math.Max(widthSpec, minWidth);                        
 

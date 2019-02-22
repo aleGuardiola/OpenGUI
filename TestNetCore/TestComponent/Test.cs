@@ -13,41 +13,27 @@ using System.Text;
 namespace TestNetCore.TestComponent
 {
     [Component(
-       TemplateResource = "TestNetCore.TestComponent.Test.xaml"  
+       TemplateResource = "TestNetCore.TestComponent.Test.xaml"        
     )]
     public class Test : Component
     {
-        Label label;
+        Label label;               
+        
+        public string Name { get => GetValueOrDefault<string>(); set => SetValue<string>(value); }         
+        
+        public Color Color { get => GetValueOrDefault<Color>(); set => SetValue<Color>(value); }
 
-        public string Name
-        {
-            get => GetValue<string>();
-            set => SetValue<string>(value);            
-        }               
+        public string Status { get => GetValueOrDefault<string>(); set => SetValue<string>(value); }
 
         protected override void Initialize()
         {
-            Name = "Alejandro";            
-        }
+            Name = "Alejandro";
 
-        protected override void ViewCreated()
-        {
+            Status = "Good";
+            Color = Color.Red;
+
             label = GetViewById<Label>("text");
-
-            label.Animation = new ParallelAnimation()
-            {
-                Animations = {
-                new FloatPropertyAnimation()
-                {
-                     Duration = 5000,
-                     StartValue = 0,
-                     EndValue = 500,
-                     Interpolator = new BounceInterpolator(),
-                     Property = "X"
-                }
-                }
-            };
-
+            
             label.IsAnimating = true;
 
             label.Click += Test_Click;
@@ -56,6 +42,7 @@ namespace TestNetCore.TestComponent
         private void Test_Click(object sender, OpenGui.Core.ClickEventArgs e)
         {
             Name = Name == "Alejandro" ? "Tini" : "Alejandro";
+            Color = Color == Color.Red ? Color.Green : Color.Red;
         }
     }
 }
