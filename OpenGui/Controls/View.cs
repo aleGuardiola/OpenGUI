@@ -212,6 +212,8 @@ namespace OpenGui.Controls
 
             SetValue<bool>(nameof(IsAnimating), ReactiveObject.LAYOUT_VALUE, false);
 
+            AttachedToWindow += View_AttachedToWindow;
+
             SubscriptionPool.Add(GetObservable<float>(nameof(Width)).Subscribe((v) => Parent?.ForceMeasure()));
             SubscriptionPool.Add(GetObservable<float>(nameof(Height)).Subscribe((v) => Parent?.ForceMeasure()));
             SubscriptionPool.Add(GetObservable<HorizontalAligment>(nameof(HorizontalAligment)).Subscribe((v) => Parent?.ForceMeasure()));
@@ -219,6 +221,13 @@ namespace OpenGui.Controls
             SubscriptionPool.Add(GetObservable<bool>(nameof(IsAnimating)).Subscribe(OnNextIsAnimating));
             SubscriptionPool.Add(GetObservable<object>(nameof(BindingContext)).Subscribe(OnNextBindingContext));
         }
+
+        private void View_AttachedToWindow(object sender, EventArgs e)
+        {
+            if (IsAnimating && _animation != null && !_animation.IsStop())
+                Window.AddFrameRunner(_animation);
+        }
+
 
         public virtual bool TryGetViewById(string id, out View view)
         {
@@ -358,7 +367,8 @@ namespace OpenGui.Controls
 
                     _animation.Stop += _animation_Stop;
 
-                    Window.AddFrameRunner(_animation);
+                    if(Window != null)
+                      Window.AddFrameRunner(_animation);
                 }
             }
             else
@@ -430,6 +440,7 @@ namespace OpenGui.Controls
         ~View()
         {
             SubscriptionPool.UnsubscribeAll();
+            AttachedToWindow -= View_AttachedToWindow;
         }
 
     }

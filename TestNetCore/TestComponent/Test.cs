@@ -34,12 +34,13 @@ namespace TestNetCore.TestComponent
         {
             label = GetViewById<Label>("text");
 
+            AttachedToWindow += Test_AttachedToWindow;
             label.Animation = new ParallelAnimation()
             {
                 Animations = {
                 new FloatPropertyAnimation()
                 {
-                     Duration = 5000,
+                     Duration = 1000,
                      StartValue = 0,
                      EndValue = 500,
                      Interpolator = new BounceInterpolator(),
@@ -48,9 +49,12 @@ namespace TestNetCore.TestComponent
                 }
             };
 
-            label.IsAnimating = true;
-
             label.Click += Test_Click;
+        }
+
+        private void Test_AttachedToWindow(object sender, EventArgs e)
+        {
+            label.IsAnimating = true;
         }
 
         private void Test_Click(object sender, OpenGui.Core.ClickEventArgs e)
