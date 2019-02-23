@@ -145,6 +145,28 @@ namespace OpenGui.Core
             return (T)property.GetPriorityValue();
         }
 
+
+        /// <summary>
+        /// Get value of the property or the default value if not exist.
+        /// </summary>
+        /// <typeparam name="T">Type of the value.</typeparam>
+        /// <param name="memberName">Property name</param>
+        /// <returns>The value of the property.</returns>
+        public T GetValueOrDefault<T>([CallerMemberName] string memberName = "")
+        {
+            Property property;
+            var exist = _properties.TryGetValue(memberName, out property);
+
+            if (!exist)
+                return default(T);
+
+            var priorityValue = property.GetPriorityValue();
+            if(priorityValue == null)
+                return default(T);
+
+            return (T)priorityValue;
+        }
+
         /// <summary>
         /// Get value of the property with specific priority.
         /// </summary>

@@ -14,14 +14,14 @@ namespace OpenGui.App
     /// <summary>
     /// The base class for a component
     /// </summary>
-    public abstract class Component : ViewContainer<View>
+    public class Component : ViewContainer<View>
     {
+        private bool _initialized = false;
+
         public Component() : base(1)
         {
             BindingContext = this;
             
-            Initialize();
-
             var type = this.GetType();
             var componentattr = Attribute.GetCustomAttribute(type, typeof(ComponentAttribute)) as ComponentAttribute;
             if(componentattr != null)
@@ -45,10 +45,28 @@ namespace OpenGui.App
 
         }
 
-        protected abstract void ViewCreated();
+        protected virtual void ViewCreated()
+        {
 
-        protected abstract void Initialize();
-       
+        }
+
+        protected virtual void Initialize()
+        {
+
+        }
+
+        public override void Check()
+        {
+            base.Check();
+
+            if(!_initialized)
+            {
+                Initialize();
+                _initialized = true;
+            }
+            
+        }
+
         private void CompileXaml(string xaml)
         {
             var content = (View)XamlServices.Parse(xaml);
