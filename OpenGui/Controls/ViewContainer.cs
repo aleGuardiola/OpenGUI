@@ -3,6 +3,7 @@ using OpenGui.Core;
 using OpenGui.GUICore;
 using OpenGui.Values;
 using OpenTK;
+using OpenTK.Input;
 using Portable.Xaml.Markup;
 using SkiaSharp;
 using System;
@@ -59,20 +60,10 @@ namespace OpenGui.Controls
             IsForceMeasure = false;
         }
 
-        public override void OnClick(ClickEventArgs e)
+        protected override void ProcessInput(KeyboardState keyboardState, MouseState mouseState, GamePadState gamePadState, JoystickState joystickState)
         {
-            for(int i = 0; i < Children.Count; i++)
-            {
-                var child = Children[i];
-                if(e.X >= child.X && e.X <= child.X + child.CalculatedWidth)
-                {
-                    child.OnClick(e);
-                    return;
-                }
-            }
-
-            if(e.Propagate)
-             base.OnClick(e);
+            for (int i = 0; i < Children.Count; i++)
+                Children[i].UpdateFrame(keyboardState, mouseState, gamePadState, joystickState);
         }
 
         public override bool TryGetViewById(string id, out View view)

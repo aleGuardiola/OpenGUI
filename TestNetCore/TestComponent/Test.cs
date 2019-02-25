@@ -10,15 +10,13 @@ using System.Drawing;
 using System.Reflection;
 using System.Text;
 
-namespace TestNetCore.TestComponent
+namespace TestNetCore
 {
     [Component(
        TemplateResource = "TestNetCore.TestComponent.Test.xaml"        
     )]
     public class Test : Component
     {
-        Label label;               
-        
         public string Name { get => GetValueOrDefault<string>(); set => SetValue<string>(value); }         
         
         public Color Color { get => GetValueOrDefault<Color>(); set => SetValue<Color>(value); }
@@ -30,14 +28,10 @@ namespace TestNetCore.TestComponent
             Name = "Alejandro";
 
             Status = "Good";
-            Color = Color.Red;
-
-            label = GetViewById<Label>("text");
-            
-            label.IsAnimating = true;
+            Color = Color.Red;                        
         }
 
-        private void Test_Click(object sender, OpenGui.Core.ClickEventArgs e)
+        public void Test_Click(object sender, OpenGui.Core.MouseEventArgs e)
         {
             Name = Name == "Alejandro" ? "Tini" : "Alejandro";
             Color = Color == Color.Red ? Color.Green : Color.Red;

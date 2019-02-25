@@ -54,6 +54,26 @@ namespace OpenGui.GUICore
             }
         }
 
+        public int Width
+        {
+            get => _gameWindow.Width;
+        }
+        
+        public int Height
+        {
+            get => _gameWindow.Width;
+        }
+
+        public int X
+        {
+            get => _gameWindow.X;
+        }
+
+        public int Y
+        {
+            get => _gameWindow.Y;
+        }
+
         public void AddFrameRunner(FrameRunner runner)
         {
             newFrameRunners.Enqueue(runner);
@@ -88,9 +108,15 @@ namespace OpenGui.GUICore
             _gameWindow = gameWindow;
             _gameWindow.Load += _gameWindow_Load;
             _gameWindow.RenderFrame += _gameWindow_RenderFrame;
+            _gameWindow.UpdateFrame += _gameWindow_UpdateFrame;
             _gameWindow.Resize += _gameWindow_Resize;
             _actionsQueue = new ConcurrentQueue<Action>();
             _uiThread = Thread.CurrentThread;
+        }
+
+        private void _gameWindow_UpdateFrame(object sender, FrameEventArgs e)
+        {
+            _renderManager.Update(e.Time, _gameWindow, _root);
         }
 
         //this function is called when the window finish load

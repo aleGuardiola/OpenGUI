@@ -4,7 +4,7 @@ using System.Text;
 
 namespace OpenGui.Core
 {
-    public class ClickEventArgs : EventArgs
+    public class MouseEventArgs : InputHandlerEventArgs
     {
         /// <summary>
         /// The X position of the pointer.
@@ -14,12 +14,8 @@ namespace OpenGui.Core
         /// The Y position of the pointer.
         /// </summary>
         public float Y { get; private set; }
-        /// <summary>
-        /// Indicates if this event should propagate back.
-        /// </summary>
-        public bool Propagate = true;
-
-        public ClickEventArgs(float x, float y)
+        
+        public MouseEventArgs(float x, float y)
         {
             X = x;
             Y = y;

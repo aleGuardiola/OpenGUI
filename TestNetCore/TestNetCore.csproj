@@ -6,10 +6,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="CombinationComponent\Combination.xaml" />
     <None Remove="TestComponent\Test.xaml" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="CombinationComponent\Combination.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
     <EmbeddedResource Include="TestComponent\Test.xaml">
       <Generator>MSBuild:Compile</Generator>
     </EmbeddedResource>

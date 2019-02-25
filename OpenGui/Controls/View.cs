@@ -18,8 +18,16 @@ namespace OpenGui.Controls
     {
         string _id;
         string _class;
-        protected SubscriptionPool SubscriptionPool;              
+        protected SubscriptionPool SubscriptionPool;
 
+        protected OpenTK.Input.KeyboardState LastKeyBoardState;
+        protected OpenTK.Input.MouseState LastMouseState;
+        protected OpenTK.Input.GamePadState LastGamePadState;
+        protected OpenTK.Input.JoystickState LastJostickState;
+
+        //input related variables
+        bool _wasMouseDown;
+        
         /// <summary>
         /// The id of this view
         /// </summary>
@@ -42,12 +50,6 @@ namespace OpenGui.Controls
         {
             get => GetValue<object>();
             set => SetValue<object>(value);
-        }
-
-        public IList<(string proertyView, string property, BindMode mode, Type type)> Bindings
-        {
-            get;
-            private set;
         }
 
         public Animation Animation
@@ -180,13 +182,15 @@ namespace OpenGui.Controls
             set => SetValue<HorizontalAligment>(value);
         }
 
-        public event EventHandler<ClickEventArgs> Click;
+        public event EventHandler<MouseEventArgs> Click;
+
+        public event EventHandler<MouseEventArgs> MouseDown;
+        public event EventHandler<MouseEventArgs> MouseUp;
 
         private OpenGui.Animations.Animation _animation = null;
 
         public View()
         {
-            Bindings = new List<(string proertyView, string property, BindMode mode, Type type)>();
             SubscriptionPool = new SubscriptionPool();
             Parent = null;
 
@@ -203,6 +207,9 @@ namespace OpenGui.Controls
             SetValue<float>(nameof(PaddingRight), ReactiveObject.LAYOUT_VALUE, 0);
             SetValue<float>(nameof(PaddingLeft), ReactiveObject.LAYOUT_VALUE, 0);
 
+            SetValue<float>(nameof(CalculatedWidth), ReactiveObject.LAYOUT_VALUE, 0);
+            SetValue<float>(nameof(CalculatedHeight), ReactiveObject.LAYOUT_VALUE, 0);
+
             SetValue<Drawable>(nameof(Background), ReactiveObject.LAYOUT_VALUE, new DrawableColor(System.Drawing.Color.Transparent));
 
             SetValue<Align>(nameof(Align), ReactiveObject.LAYOUT_VALUE, Align.Center);
@@ -218,8 +225,48 @@ namespace OpenGui.Controls
             SubscriptionPool.Add(GetObservable<float>(nameof(Height)).Subscribe((v) => Parent?.ForceMeasure()));
             SubscriptionPool.Add(GetObservable<HorizontalAligment>(nameof(HorizontalAligment)).Subscribe((v) => Parent?.ForceMeasure()));
             SubscriptionPool.Add(GetObservable<VerticalAligment>(nameof(VerticalAligment)).Subscribe((v) => Parent?.ForceMeasure()));
-            SubscriptionPool.Add(GetObservable<bool>(nameof(IsAnimating)).Subscribe(OnNextIsAnimating));
-            SubscriptionPool.Add(GetObservable<object>(nameof(BindingContext)).Subscribe(OnNextBindingContext));
+            SubscriptionPool.Add(GetObservable<bool>(nameof(IsAnimating)).Subscribe(OnNextIsAnimating));            
+        }
+
+        protected virtual void ProcessInput(OpenTK.Input.KeyboardState keyboardState, OpenTK.Input.MouseState mouseState, OpenTK.Input.GamePadState gamePadState, OpenTK.Input.JoystickState joystickState)
+        {
+            ProcessMouseInput(mouseState);
+        }
+
+        private void ProcessMouseInput(OpenTK.Input.MouseState mouseState)
+        {
+            var mouseX = mouseState.X - Window.X;
+            var mouseY = mouseState.Y - Window.Y;
+
+            Console.WriteLine("X: {0}, Y: {1}", mouseX, mouseY);
+
+            if (mouseX >= X && mouseX <= X + CalculatedWidth && mouseY >= Y && mouseY <= Y + CalculatedHeight)
+            {
+                if( mouseState.IsButtonDown(OpenTK.Input.MouseButton.Left) )
+                {
+                    _wasMouseDown = true;
+                    MouseDown?.Invoke(this, new MouseEventArgs(mouseX, mouseY));
+                }
+                else
+                {
+                    MouseUp?.Invoke(this, new MouseEventArgs(mouseX, mouseY));
+                    if(_wasMouseDown)
+                    {
+                        Click?.Invoke(this, new MouseEventArgs(mouseX, mouseY));
+                    }
+                }
+            }
+        }
+
+        public void UpdateFrame(OpenTK.Input.KeyboardState keyboardState, OpenTK.Input.MouseState mouseState, OpenTK.Input.GamePadState gamePadState, OpenTK.Input.JoystickState joystickState)
+        {
+            //process the input and handle events
+            ProcessInput(keyboardState, mouseState, gamePadState, joystickState);
+
+            LastGamePadState = gamePadState;
+            LastJostickState = joystickState;
+            LastKeyBoardState = keyboardState;
+            LastMouseState = mouseState;
         }
 
         private void View_AttachedToWindow(object sender, EventArgs e)
@@ -252,55 +299,9 @@ namespace OpenGui.Controls
             return result as T;
         }
 
-        public virtual void OnClick(ClickEventArgs e)
-        {
-            Click?.Invoke(this, e);
-        }
-
-        private void OnNextBindingContext(object next)
-        {
-            if (next == null)
-                return;
-
-            var bindMethod = typeof(View).GetMethod("Bind", new[] { typeof(string), typeof(string), });
-            var twoWayBindMethod = typeof(View).GetMethod("BindTwoWay", new[] { typeof(string), typeof(string), });
-
-            MethodInfo genericMethod;
-
-            foreach (var binding in Bindings)
-            {
-                switch(binding.mode)
-                {
-                    case BindMode.OneWay:
-                        genericMethod = bindMethod.MakeGenericMethod(binding.type);
-                        genericMethod.Invoke(this, new object[] { binding.proertyView, binding.property } );    
-                        break;
-
-                    case BindMode.TwoWay:
-                        genericMethod = twoWayBindMethod.MakeGenericMethod(binding.type);
-                        genericMethod.Invoke(this, new object[] { binding.proertyView, binding.property });
-                        break;
-                }
-            }
-        }
-
-        private object GetBindingContext()
-        {
-            var reactiveObj = this;
-            while (!reactiveObj.Exist(nameof(BindingContext))) {
-
-                reactiveObj = reactiveObj.Parent;
-
-                if (reactiveObj == null)
-                    return new object();               
-            }
-
-            return reactiveObj.BindingContext;            
-        }
-
         public void Bind<T>(string viewProperty, string bindingContextProperty)
         {
-            var bindingContext = GetBindingContext();
+            var bindingContext = BindingContext;
 
             var prop = bindingContext.GetType().GetProperty(bindingContextProperty);
             try
@@ -328,7 +329,7 @@ namespace OpenGui.Controls
 
         public void BindTwoWay<T>(string viewProperty, string bindingContextProperty)
         {
-            var bindingContext = GetBindingContext();
+            var bindingContext = BindingContext;
             
             var prop = bindingContext.GetType().GetProperty(bindingContextProperty);            
             try

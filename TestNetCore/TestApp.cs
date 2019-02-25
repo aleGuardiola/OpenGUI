@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using TestNetCore.TestComponent;
 
 namespace TestNetCore
 {
@@ -10,7 +9,7 @@ namespace TestNetCore
     {
         protected override void OnStart()
         {
-            MainComponent = new Test();
+            MainComponent = new Combination();
         }
     }
 }

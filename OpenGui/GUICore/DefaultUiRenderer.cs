@@ -15,30 +15,11 @@ namespace OpenGui.GUICore
         float lastWidth;
         float lastHeight;
 
-        OpenTK.Input.KeyboardState _lastKeyBoardState;
-        OpenTK.Input.MouseState _lastMouseState;
-        OpenTK.Input.GamePadState _lastGamePadState;
-        OpenTK.Input.JoystickState _lastJostickState;
-
         public void RenderFrame(double deltaTime, Matrix4 projection, Matrix4 view, IGameWindow gameWindow, ViewContainer rootView, int width, int height, float cameraZ)
         {
             //if there is no root view just no render anything
             if (rootView == null)
                 return;
-
-            //handle input
-            if(gameWindow.Focused)
-            {
-                var mouseState = OpenTK.Input.Mouse.GetCursorState();
-                //clicked
-                if (mouseState.IsButtonUp(OpenTK.Input.MouseButton.Left) && _lastMouseState.IsButtonDown(OpenTK.Input.MouseButton.Left))
-                {
-                    rootView.OnClick(new Core.ClickEventArgs(mouseState.X - gameWindow.X, mouseState.Y - gameWindow.Y));
-                }
-
-                //update states
-                _lastMouseState = mouseState;
-            }            
 
             //measure only if size has changed
             if(lastWidth != width || lastHeight != height)
@@ -52,6 +33,16 @@ namespace OpenGui.GUICore
 
             lastWidth = width;
             lastHeight = height;
+        }
+
+        public void Update(double deltaTime, IGameWindow gameWindow, ViewContainer rootView)
+        {
+            rootView.UpdateFrame(
+                OpenTK.Input.Keyboard.GetState(),
+                OpenTK.Input.Mouse.GetCursorState(),
+                OpenTK.Input.GamePad.GetState(0),
+                OpenTK.Input.Joystick.GetState(0)
+                );
         }
     }
 }
