@@ -28,8 +28,11 @@ namespace OpenGui.GUICore
               rootView.Check();            
 
             //render view
-            rootView.GLDraw(projection, view, new RectangleF(0, 0, 1000, 1000), width, height, cameraZ); 
-                        
+            rootView.GLDraw(projection, view, new RectangleF(0, 0, 1000, 1000), width, height, cameraZ);
+
+            var mouseX = OpenTK.Input.Mouse.GetCursorState().X - gameWindow.X;
+            var mouseY = OpenTK.Input.Mouse.GetCursorState().Y - gameWindow.Y;
+            Console.WriteLine("X: {0}, Y: {1}", mouseX, mouseY);
 
             lastWidth = width;
             lastHeight = height;
@@ -37,6 +40,8 @@ namespace OpenGui.GUICore
 
         public void Update(double deltaTime, IGameWindow gameWindow, ViewContainer rootView)
         {
+            
+
             rootView.UpdateFrame(
                 OpenTK.Input.Keyboard.GetState(),
                 OpenTK.Input.Mouse.GetCursorState(),

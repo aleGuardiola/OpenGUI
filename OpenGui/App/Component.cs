@@ -76,7 +76,11 @@ namespace OpenGui.App
         protected override (float measuredWidth, float measuredHeight) OnMesure(float widthSpec, float heightSpec, MeasureSpecMode mode)
         {
             if (Children.Count > 0)
-                Children[0].Mesure(widthSpec, heightSpec, MeasureSpecMode.Exactly);
+            {
+                var child = Children[0];
+                child.Mesure(widthSpec, heightSpec, mode);
+                return (child.CalculatedWidth, child.CalculatedHeight);
+            }
 
             return base.OnMesure(widthSpec, heightSpec, mode);
         }

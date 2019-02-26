@@ -234,28 +234,50 @@ namespace OpenGui.Controls
         }
 
         private void ProcessMouseInput(OpenTK.Input.MouseState mouseState)
-        {
+        { 
             var mouseX = mouseState.X - Window.X;
-            var mouseY = mouseState.Y - Window.Y;
-
-            Console.WriteLine("X: {0}, Y: {1}", mouseX, mouseY);
+            var mouseY = mouseState.Y - Window.Y - 38;
 
             if (mouseX >= X && mouseX <= X + CalculatedWidth && mouseY >= Y && mouseY <= Y + CalculatedHeight)
-            {
-                if( mouseState.IsButtonDown(OpenTK.Input.MouseButton.Left) )
+            {                
+                if ( mouseState.IsButtonDown(OpenTK.Input.MouseButton.Left) )
                 {
                     _wasMouseDown = true;
-                    MouseDown?.Invoke(this, new MouseEventArgs(mouseX, mouseY));
+                    OnMouseDown(new MouseEventArgs(mouseX, mouseY));
                 }
                 else
                 {
-                    MouseUp?.Invoke(this, new MouseEventArgs(mouseX, mouseY));
-                    if(_wasMouseDown)
+                    if (LastMouseState.IsButtonDown(OpenTK.Input.MouseButton.Left))
+                        OnMouseUp(new MouseEventArgs(mouseX, mouseY));
+
+                    if (_wasMouseDown)
                     {
-                        Click?.Invoke(this, new MouseEventArgs(mouseX, mouseY));
+                        OnClick(new MouseEventArgs(mouseX, mouseY));
                     }
+                    _wasMouseDown = false;
                 }
             }
+        }
+
+        private void OnMouseDown(MouseEventArgs eventArgs)
+        {
+            MouseDown?.Invoke(this, eventArgs);
+            if (eventArgs.Propagate)
+                Parent?.OnMouseDown(eventArgs);
+        }
+
+        private void OnMouseUp(MouseEventArgs eventArgs)
+        {
+            MouseUp?.Invoke(this, eventArgs);
+            if (eventArgs.Propagate)
+                Parent?.OnMouseUp(eventArgs);
+        }
+
+        private void OnClick(MouseEventArgs eventArgs)
+        {
+            Click?.Invoke(this, eventArgs);
+            if (eventArgs.Propagate)
+                Parent?.OnClick(eventArgs);
         }
 
         public void UpdateFrame(OpenTK.Input.KeyboardState keyboardState, OpenTK.Input.MouseState mouseState, OpenTK.Input.GamePadState gamePadState, OpenTK.Input.JoystickState joystickState)

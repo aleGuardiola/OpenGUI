@@ -28,7 +28,9 @@ namespace TestNetCore
             Name = "Alejandro";
 
             Status = "Good";
-            Color = Color.Red;                        
+            Color = Color.Red;
+
+            Background = new DrawableColor(Color.Blue);
         }
 
         public void Test_Click(object sender, OpenGui.Core.MouseEventArgs e)

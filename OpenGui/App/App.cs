@@ -41,7 +41,7 @@ namespace OpenGui.App
             _window = new Window(window);            
             _window.Root = new CoordinateLayout();
 
-            _window.BackgroundColor = OpenTK.Color.White;
+            _window.BackgroundColor = OpenTK.Color.Wheat;
 
             OnStart();
             if (MainComponent == null)
