@@ -6,6 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Layout\**" />
+    <EmbeddedResource Remove="Layout\**" />
+    <None Remove="Layout\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Shaders\transformable.frag" />
     <None Remove="Shaders\transformable.vert" />
   </ItemGroup>
@@ -25,10 +31,6 @@
     <PackageReference Include="Portable.Xaml" Version="0.24.0" />
     <PackageReference Include="SkiaSharp" Version="1.68.0" />
     <PackageReference Include="System.Reactive" Version="4.1.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Layout\" />
   </ItemGroup>
 
 </Project>

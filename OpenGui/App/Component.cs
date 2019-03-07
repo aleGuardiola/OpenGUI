@@ -79,6 +79,7 @@ namespace OpenGui.App
             {
                 var child = Children[0];
                 child.Mesure(widthSpec, heightSpec, mode);
+                OnLayout();
                 return (child.CalculatedWidth, child.CalculatedHeight);
             }
 
