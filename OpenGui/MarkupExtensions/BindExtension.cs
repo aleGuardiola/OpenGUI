@@ -9,14 +9,7 @@ using System.Text;
 namespace OpenGui.MarkupExtensions
 {
     public class BindExtension : MarkupExtension
-    {
-        Core.Binder _binder = null;
-
-        IObservable<object> targetObservable;
-        View target;
-        PropertyInfo targetPropertyInfo;
-        IDisposable bindingContextSubscription;
-
+    {        
         public string Path
         {
             get;
@@ -79,19 +72,8 @@ namespace OpenGui.MarkupExtensions
 
         object bindProperty(View view, PropertyInfo property)
         {
-            target = view;
-            targetPropertyInfo = property;
-
-            if(Mode == BindMode.OneWay)
-            {
-                bindingContextSubscription = view.GetObservable(x => x.BindingContext).Subscribe(onNextBindingContextOneWay);
-            }
-            else
-            {
-                targetObservable = view.GetObservable<object>(property.Name);
-                bindingContextSubscription = view.GetObservable(x => x.BindingContext).Subscribe(onNextBindingContextTwoWay);
-            }
-
+            new ViewBinder(view, property.Name, Path, Mode == BindMode.OneWay ? false : true);
+                        
             if (property.PropertyType.IsValueType)
             {
                 return Activator.CreateInstance(property.PropertyType);
@@ -100,45 +82,5 @@ namespace OpenGui.MarkupExtensions
             return null;
         }
 
-        void onNextBindingContextOneWay(object bindingContext)
-        {
-
-        }
-        
-        void onNextBindingContextTwoWay(object bindingContext)
-        {
-
-        }
-
-        (PropertyInfo Property, object Source)getSourceProperty(object bindingContext)
-        {
-            object source;
-            var pathSplit = Path.Split('.');
-            source = bindingContext;
-            PropertyInfo property = null;
-
-            for(int i = 0; i < pathSplit.Length; i++)
-            {
-                property = source.GetType().GetProperty(pathSplit[i]);
-
-                if(i < pathSplit.Length - 1)
-                {
-                    source = property.GetValue(source);
-                }
-            }
-
-            return (property, source);
-        }
-
-        IObservable<object> getSourceObservable(object source, PropertyInfo property)
-        {
-             
-        }
-
-        ~BindExtension()
-        {
-            bindingContextSubscription?.Dispose();
-            _binder?.Dispose();
-        }
     }
 }

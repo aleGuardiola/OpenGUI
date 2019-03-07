@@ -22,13 +22,6 @@ namespace TestNetCore
 
             var component = GetViewById<Test>("test1");
             component.Background = new DrawableColor(System.Drawing.Color.Orange);
-
-            var obs = this.GetObservable(x => x.Text);
-
-            var a = Observable.When(obs.Where(s => s.Length == 8).And(this.GetObservable(x => x.Width)).Then((text, width) => text + width.ToString()));
-            
-
-
         }
     }
 }

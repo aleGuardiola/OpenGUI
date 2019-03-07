@@ -23,6 +23,11 @@ namespace TestNetCore
 
         public string Status { get => GetValueOrDefault<string>(); set => SetValue<string>(value); }
 
+        public Test()
+        {
+            Name = "Alejandro";
+        }
+
         protected override void Initialize()
         {
             Name = "Alejandro";

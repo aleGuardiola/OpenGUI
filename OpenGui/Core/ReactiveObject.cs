@@ -9,7 +9,7 @@ using System.Threading;
 
 namespace OpenGui.Core
 {
-    public class ReactiveObject
+    public class ReactiveObject : IPropertyChangeObservable
     {
         public const int SYSTEM_VALUE = 0;
         public const int LAYOUT_VALUE = 1;
