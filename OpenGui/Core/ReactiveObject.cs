@@ -181,7 +181,7 @@ namespace OpenGui.Core
 
             return property.GetObservable<T>();
         }
-
+        
         private Property GetOrCreateProperty(string propertyName, Type type)
         {
             Property result;

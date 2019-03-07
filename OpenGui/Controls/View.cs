@@ -321,62 +321,6 @@ namespace OpenGui.Controls
             return result as T;
         }
 
-        public void Bind<T>(string viewProperty, string bindingContextProperty)
-        {
-            var bindingContext = BindingContext;
-
-            var prop = bindingContext.GetType().GetProperty(bindingContextProperty);
-            try
-            {
-                SetValue<T>((T)prop.GetValue(bindingContext), viewProperty);
-            }
-            catch(Exception e)
-            {
-                Console.WriteLine($"Error getting value: {e.Message}");
-            }            
-
-            if(bindingContext is INotifyPropertyChanged)
-            {
-                var notifier = (INotifyPropertyChanged)bindingContext;
-                var observable = notifier.GetObservable<T>(bindingContextProperty);
-                Bind(viewProperty, observable);
-            }
-            else if(bindingContext is ReactiveObject )
-            {
-                var reactiveObj = (ReactiveObject)bindingContext;
-                var observable = reactiveObj.GetObservable<T>(bindingContextProperty);
-                Bind(viewProperty, observable);
-            }
-        }
-
-        public void BindTwoWay<T>(string viewProperty, string bindingContextProperty)
-        {
-            var bindingContext = BindingContext;
-            
-            var prop = bindingContext.GetType().GetProperty(bindingContextProperty);            
-            try
-            { 
-                SetValue<T>((T)prop.GetValue(bindingContext), viewProperty);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Error getting value: {e.Message}");
-            }
-
-            if (bindingContext is INotifyPropertyChanged)
-            {
-                var notifier = (INotifyPropertyChanged)bindingContext;
-                var observable = notifier.GetObservable<T>(bindingContextProperty);
-                BindTwoWay(viewProperty, observable, bindingContext, bindingContextProperty);
-            }
-            else if (bindingContext is ReactiveObject)
-            {
-                var reactiveObj = (ReactiveObject)bindingContext;
-                var observable = reactiveObj.GetObservable<T>(bindingContextProperty);
-                BindTwoWay(viewProperty, observable, bindingContext, bindingContextProperty);
-            }
-        }
-
         private void OnNextIsAnimating(bool value)
         {
             if (!Exist(nameof(Animation)))

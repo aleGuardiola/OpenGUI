@@ -1,4 +1,5 @@
 ﻿using OpenGui.Controls;
+using OpenGui.Core;
 using Portable.Xaml.Markup;
 using System;
 using System.Collections.Generic;
@@ -9,6 +10,13 @@ namespace OpenGui.MarkupExtensions
 {
     public class BindExtension : MarkupExtension
     {
+        Core.Binder _binder = null;
+
+        IObservable<object> targetObservable;
+        View target;
+        PropertyInfo targetPropertyInfo;
+        IDisposable bindingContextSubscription;
+
         public string Path
         {
             get;
@@ -20,7 +28,6 @@ namespace OpenGui.MarkupExtensions
             get;
             set;
         }
-
 
         public BindExtension()
         {
@@ -35,7 +42,7 @@ namespace OpenGui.MarkupExtensions
 
             if (property is PropertyInfo)
             {
-                return bindProperty(view, property);
+                return bindProperty(view, property as PropertyInfo);
             }
             else
             {
@@ -70,43 +77,68 @@ namespace OpenGui.MarkupExtensions
             });
         }
 
-        object bindProperty(View view, object propertyInfo)
+        object bindProperty(View view, PropertyInfo property)
         {
-            var property = propertyInfo as PropertyInfo;
+            target = view;
+            targetPropertyInfo = property;
 
-            view.GetObservable<object>(nameof(View.BindingContext)).Subscribe((next) =>
+            if(Mode == BindMode.OneWay)
             {
-                if (next == null)
-                    return;
+                bindingContextSubscription = view.GetObservable(x => x.BindingContext).Subscribe(onNextBindingContextOneWay);
+            }
+            else
+            {
+                targetObservable = view.GetObservable<object>(property.Name);
+                bindingContextSubscription = view.GetObservable(x => x.BindingContext).Subscribe(onNextBindingContextTwoWay);
+            }
 
-                if (next == null)
-                    return;
-
-                var bindMethod = typeof(View).GetMethod("Bind", new[] { typeof(string), typeof(string), });
-                var twoWayBindMethod = typeof(View).GetMethod("BindTwoWay", new[] { typeof(string), typeof(string), });
-
-                MethodInfo genericMethod;
-
-                switch (Mode)
-                {
-                    case BindMode.OneWay:
-                        genericMethod = bindMethod.MakeGenericMethod(property.PropertyType);
-                        genericMethod.Invoke(view, new object[] { property.Name, Path });
-                        break;
-
-                    case BindMode.TwoWay:
-                        genericMethod = twoWayBindMethod.MakeGenericMethod(property.PropertyType);
-                        genericMethod.Invoke(view, new object[] { property.Name, Path });
-                        break;
-                }
-            });
-            
             if (property.PropertyType.IsValueType)
             {
                 return Activator.CreateInstance(property.PropertyType);
             }
 
             return null;
+        }
+
+        void onNextBindingContextOneWay(object bindingContext)
+        {
+
+        }
+        
+        void onNextBindingContextTwoWay(object bindingContext)
+        {
+
+        }
+
+        (PropertyInfo Property, object Source)getSourceProperty(object bindingContext)
+        {
+            object source;
+            var pathSplit = Path.Split('.');
+            source = bindingContext;
+            PropertyInfo property = null;
+
+            for(int i = 0; i < pathSplit.Length; i++)
+            {
+                property = source.GetType().GetProperty(pathSplit[i]);
+
+                if(i < pathSplit.Length - 1)
+                {
+                    source = property.GetValue(source);
+                }
+            }
+
+            return (property, source);
+        }
+
+        IObservable<object> getSourceObservable(object source, PropertyInfo property)
+        {
+             
+        }
+
+        ~BindExtension()
+        {
+            bindingContextSubscription?.Dispose();
+            _binder?.Dispose();
         }
     }
 }
