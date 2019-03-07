@@ -355,6 +355,7 @@ namespace OpenGui.Controls
         private SKBitmap GetBitmap(float _width, float _height, SKBitmap cachedBitmap = null)
         {
             var bitmap = cachedBitmap ?? new SKBitmap(new SKImageInfo((int)_width, (int)_height, SKColorType.Rgba8888));
+            
             using (var canvas = new SKCanvas(bitmap))
             {
                 DrawTexture(canvas, bitmap.Width, bitmap.Height);

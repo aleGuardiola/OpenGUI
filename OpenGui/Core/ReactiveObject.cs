@@ -3,8 +3,8 @@ using OpenGui.Helpers;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading;
 
 namespace OpenGui.Core
@@ -15,9 +15,7 @@ namespace OpenGui.Core
         public const int LAYOUT_VALUE = 1;
         public const int USER_VALUE = 2;
         public const int ANIMATION_VALUE = 3;
-
-        private SubscriptionPool _subscriptionPool = new SubscriptionPool();
-
+        
         Dictionary<string, Property> _properties;
         private Thread _threadWhereCreated;
 
@@ -33,44 +31,7 @@ namespace OpenGui.Core
             if (runningThread != _threadWhereCreated)
                 throw new InvalidOperationException("Trying to change property in a different thread.");            
         }
-
-        public void Bind<T>(string propertyName, IObservable<T> observable)
-        {
-            _subscriptionPool.Add(observable.Subscribe((next) =>
-            {
-                SetValue<T>(next, propertyName);
-            }));
-        }
-
-        public void BindTwoWay<T>( string propertyName, IObservable<T> observable, object obj, string property )
-        {
-            {
-                var prop = obj.GetType().GetProperty(property);
-
-                bool changed  = false;
-                _subscriptionPool.Add(observable.Subscribe((next) => {
-                    if (!changed)
-                    {
-                        SetValue<T>(next, propertyName);
-                        changed = true;
-                    }
-                    else
-                        changed = false;
-                }));
-
-                _subscriptionPool.Add(GetObservable<T>(propertyName).Subscribe((next) =>
-                {
-                    if (!changed)
-                    {
-                        prop.SetValue(obj, next);
-                        changed = true;
-                    }
-                    else
-                        changed = false; 
-                }));
-            }           
-        }
-
+        
         /// <summary>
         /// Try to delete a value by its priority.
         /// </summary>
@@ -235,6 +196,8 @@ namespace OpenGui.Core
             return result;
         }
 
+
+
         private class Property
         {
             public string Name;
@@ -339,12 +302,24 @@ namespace OpenGui.Core
 
             }
 
-        }
+        }        
+    }
 
-        ~ReactiveObject()
+    public static class ReactiveObjectExtensions
+    {
+
+        /// <summary>
+        /// Get observabole of the values of specific property.
+        /// </summary>
+        /// <typeparam name="T">>Type of the value.</typeparam>
+        /// <param name="property">Property.</param>
+        /// <returns>The observable of the property.</returns>
+        public static IObservable<T> GetObservable<T, TObject>( this TObject reactiveObject, Expression<Func<TObject, T>> property) where TObject : ReactiveObject
         {
-            _subscriptionPool.UnsubscribeAll();
+            var name = PropertyUtil.GetPropertyNameCore(property.Body);
+            return reactiveObject.GetObservable<T>(name);
         }
 
     }
+
 }
