@@ -39,6 +39,8 @@ namespace OpenGui.Controls
         {
             _children = new ChildrenList(this, maxItems);
             IsForceMeasure = true;
+            GetObservable<float>(nameof(X)).Subscribe((val) => IsForceMeasure = true );
+            GetObservable<float>(nameof(Y)).Subscribe((val) => IsForceMeasure = true );
         }
 
         public override void Check()

@@ -225,7 +225,8 @@ namespace OpenGui.Controls
             SubscriptionPool.Add(GetObservable<float>(nameof(Height)).Subscribe((v) => Parent?.ForceMeasure()));
             SubscriptionPool.Add(GetObservable<HorizontalAligment>(nameof(HorizontalAligment)).Subscribe((v) => Parent?.ForceMeasure()));
             SubscriptionPool.Add(GetObservable<VerticalAligment>(nameof(VerticalAligment)).Subscribe((v) => Parent?.ForceMeasure()));
-            SubscriptionPool.Add(GetObservable<bool>(nameof(IsAnimating)).Subscribe(OnNextIsAnimating));            
+            SubscriptionPool.Add(GetObservable<bool>(nameof(IsAnimating)).Subscribe(OnNextIsAnimating));
+            SubscriptionPool.Add(GetObservable<Drawable>(nameof(Background)).Subscribe((next) => ForzeDraw()));
         }
 
         protected virtual void ProcessInput(OpenTK.Input.KeyboardState keyboardState, OpenTK.Input.MouseState mouseState, OpenTK.Input.GamePadState gamePadState, OpenTK.Input.JoystickState joystickState)

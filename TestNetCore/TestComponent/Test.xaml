@@ -1,7 +1,4 @@
-﻿<CoordinateLayout xmlns="https://github.com/aleGuardiola/OpenGUI"
-                  Width="200"
-                  Height="200"
-                  >
+﻿<CoordinateLayout xmlns="https://github.com/aleGuardiola/OpenGUI">
 
     <Label Id="text" Text="{Bind Path=Name}" Click="{Bind Path=Test_Click}" TextColor="Black"/>
 
