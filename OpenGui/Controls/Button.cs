@@ -19,6 +19,7 @@ namespace OpenGui.Controls
         {
             _label = new Label();
             this.Children.Add(_label);
+            SubscriptionPool.Add(GetObservable<string>(nameof(Text)).Subscribe((v) => _label.Text = v));
         }
 
         protected override (float measuredWidth, float measuredHeight) OnMesure(float widthSpec, float heightSpec, MeasureSpecMode mode)
@@ -31,7 +32,8 @@ namespace OpenGui.Controls
         protected override void OnLayout()
         {
             var label = Children[0] as Label;
-
+            label.X = (X / 2) + (label.CalculatedWidth / 2);
+            label.Y = (Y / 2) + (label.CalculatedHeight / 2);
         }
     }
 }

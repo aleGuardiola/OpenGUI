@@ -3,5 +3,5 @@
     <Label Id="text" Text="{Bind Path=Name}" Click="{Bind Path=Test_Click}" TextColor="{Bind Path=Color}"/>
 
     <Label Text="{Bind Path=Status}"  TextColor="{Bind Path=Color}" RelativeY="100"/>  
- 
+     
 </CoordinateLayout> 

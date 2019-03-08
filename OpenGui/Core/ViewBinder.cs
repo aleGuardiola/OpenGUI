@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -55,18 +56,19 @@ namespace OpenGui.Core
             var type = _viewPropertyInfo.PropertyType;
 
             object sourceObservable;
+                                    
+            sourceObservable = getPropObservable(source, sourcePropertyInfo, _viewPropertyInfo.PropertyType);
 
-            if (sourcePropertyInfo.PropertyType != _viewPropertyInfo.PropertyType)            
-               throw new Exception("Types not match.");
-                        
-            sourceObservable = getPropObservable(source, sourcePropertyInfo);
-            if(!_isTwoWay)
+            if (sourceObservable.GetType().GetInterfaces().First(i=>i.GetGenericTypeDefinition() == typeof(IObservable<>)).GetGenericArguments()[0] != _viewPropertyInfo.PropertyType)
+                throw new Exception("Types not match.");
+
+            if (!_isTwoWay)
             {
                 binder = newOneWayBinder(_view, _viewPropertyInfo.Name, sourceObservable, _viewPropertyInfo.PropertyType);
                 return;
             }
 
-            var targetObservable = getPropObservable(_view, _viewPropertyInfo);
+            var targetObservable = getPropObservable(_view, _viewPropertyInfo, _viewPropertyInfo.PropertyType);
             binder = newTwoWayBinder(_view, _viewPropertyInfo.Name, targetObservable, source, sourcePropertyInfo.Name, sourceObservable, _viewPropertyInfo.PropertyType);
         }
 
@@ -82,9 +84,8 @@ namespace OpenGui.Core
             return Activator.CreateInstance(type, target, targetProperty, sourceObservable) as Binder;
         }
 
-        static object getPropObservable(object obj, PropertyInfo propertyInfo)
+        static object getPropObservable(object obj, PropertyInfo propertyInfo, Type type)
         {
-            var type = propertyInfo.PropertyType;
             var method = typeof(ViewBinder).GetMethod(nameof(getPropertyObservable), BindingFlags.Static | BindingFlags.NonPublic)
                                            .MakeGenericMethod(type);
 

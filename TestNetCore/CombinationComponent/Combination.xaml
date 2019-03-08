@@ -3,5 +3,7 @@
 
     <local:Test Id="test1"  Width ="50" Height="50"></local:Test>
     <local:Test Width ="500" Height="500" RelativeX="500" RelativeY="500"></local:Test>
-    
+
+    <Button Width="200" Height="200" RelativeX="200" RelativeY="200" Text="{Bind Path=ButtonText}" Click="{Bind Path=onButtonClick}" />
+
 </CoordinateLayout> 

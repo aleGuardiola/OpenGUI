@@ -20,6 +20,8 @@ namespace OpenGui.App
 
         public Component() : base(1)
         {
+            Constructor();
+
             BindingContext = this;
             
             var type = this.GetType();
@@ -42,6 +44,11 @@ namespace OpenGui.App
             }
 
             ViewCreated();
+
+        }
+
+        public virtual void Constructor()
+        {
 
         }
 
