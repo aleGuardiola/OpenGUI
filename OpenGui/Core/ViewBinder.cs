@@ -59,8 +59,13 @@ namespace OpenGui.Core
                                     
             sourceObservable = getPropObservable(source, sourcePropertyInfo, _viewPropertyInfo.PropertyType);
 
-            if (sourceObservable.GetType().GetInterfaces().First(i=>i.GetGenericTypeDefinition() == typeof(IObservable<>)).GetGenericArguments()[0] != _viewPropertyInfo.PropertyType)
+            var sourceObservableType = sourceObservable.GetType().GetInterfaces().First(i => i.GetGenericTypeDefinition() == typeof(IObservable<>)).GetGenericArguments()[0];
+              
+            if (!_viewPropertyInfo.PropertyType.IsAssignableFrom( sourceObservableType ) )
+            {                
                 throw new Exception("Types not match.");
+            }
+                
 
             if (!_isTwoWay)
             {

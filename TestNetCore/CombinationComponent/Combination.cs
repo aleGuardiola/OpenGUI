@@ -3,6 +3,7 @@ using OpenGui.Core;
 using OpenGui.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Reactive.Linq;
 using System.Text;
 
@@ -16,10 +17,13 @@ namespace TestNetCore
         int clickCount { get => GetValue<int>(); set => SetValue<int>(value); }
 
         public IObservable<string> ButtonText { get; set; }
+        public IObservable<Drawable> ButtonBackground { get; set; }
 
         public override void Constructor()
         {
-            ButtonText = this.GetObservable(x => x.clickCount).Select(x => $"Clicks: {x}");            
+            var countObservable = this.GetObservable(x => x.clickCount);
+            ButtonText = countObservable.Select(x => $"Clicks: {x}");
+            ButtonBackground = countObservable.Select(x => x % 2 == 0 ? new DrawableColor(Color.Green) : new DrawableColor(Color.Red));
         }
 
         protected override void Initialize()
