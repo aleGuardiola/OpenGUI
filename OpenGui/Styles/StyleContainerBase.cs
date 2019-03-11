@@ -7,6 +7,6 @@ namespace OpenGui.Styles
 {
     public abstract class StyleContainerBase
     {
-        public abstract bool CanViewUseStyle(View view);
+        public abstract bool CanViewUseStyle(View view);        
     }
 }
