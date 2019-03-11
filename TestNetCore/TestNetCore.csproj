@@ -26,6 +26,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\App\OpenGui.App.csproj" />
+    <ProjectReference Include="..\OpenGUi.Controls\OpenGUi.Controls.csproj" />
     <ProjectReference Include="..\OpenGui\OpenGui.csproj" />
   </ItemGroup>
 

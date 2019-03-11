@@ -4,7 +4,7 @@ using System.Text;
 using OpenGui.Core;
 using OpenGui.Values;
 
-namespace OpenGui.Controls
+namespace OpenGui.Controls.Containers
 {
     public class CoordinateLayout : ViewContainer<View>
     {

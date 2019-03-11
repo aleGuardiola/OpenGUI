@@ -1,61 +1,33 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using OpenGui.Controls;
+using OpenGui.Helpers;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace OpenGui.Styles
 {
-    public abstract class StyleProvider
+    public class StyleProvider
     {
-        private Dictionary<string, SelectorStyle> _classStyles;
-        private Dictionary<string, SelectorStyle> _idStyles;
-        private Dictionary<string, SelectorStyle> _tagStyles;
+        List<StyleDefinition> _definitions;
 
         public StyleProvider()
         {
-            _classStyles = new Dictionary<string, SelectorStyle>();
-            _idStyles = new Dictionary<string, SelectorStyle>();
-            _tagStyles = new Dictionary<string, SelectorStyle>();
+            _definitions = new List<StyleContainer>();
         }
 
-        protected void AddClassSelector( string clas, SelectorStyle style )
+        public void AddDefinition(StyleDefinition definition)
         {
-            _classStyles.Add(clas, style);
-        }
-        
-        protected void AddIdSelector(string id, SelectorStyle style)
-        {
-            _classStyles.Add(id, style);
+            _containers.Add(container);
         }
 
-        protected void AddTagSelector(string tag, SelectorStyle style)
+        public IEnumerable<Set> GetStyles(View view)
         {
-            _classStyles.Add(tag, style);
+            return view.Styles.Setters.Concat(
+                _containers.Where(c => c.CanViewUseStyle(view))
+                .OrderBy(c => c.Priority).SelectMany(c => c.Setters))
+                .Concat(view.Parent.GetInheritedStyles())
+                .Distinct(new EComparer<Set>((x, y) => x.Property == y.Property));
         }
-
-        public bool TryGetSelectorStyle(Selector selector, out SelectorStyle result)
-        {
-            if (selector is ClassSelector)
-            {
-                var classSelector = selector as ClassSelector;
-                return _classStyles.TryGetValue(classSelector.Class, out result);
-            }
-
-            if (selector is IdSelector)
-            {
-                var idSelector = selector as IdSelector;
-                return _idStyles.TryGetValue(idSelector.Id, out result);
-            }
-
-            if (selector is TagSelector)
-            {
-                var tagSelector = selector as TagSelector;
-                return _tagStyles.TryGetValue(tagSelector.Tag, out result);
-            }
-
-            result = null;
-            return false;
-        }        
-
     }
 }

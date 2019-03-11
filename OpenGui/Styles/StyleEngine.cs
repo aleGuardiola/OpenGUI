@@ -4,7 +4,7 @@ using System.Text;
 
 namespace OpenGui.Styles
 {
-    public class SelectorStyle
+    public class StyleEngine
     {
     }
 }

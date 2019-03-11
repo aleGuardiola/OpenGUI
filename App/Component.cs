@@ -76,7 +76,7 @@ namespace OpenGui.App
 
         private void CompileXaml(string xaml)
         {
-            var content = (View)XamlServices.Parse(xaml);
+            var content = (View)XamlServices.Parse(xaml); 
             Children.Add(content);
         }
 

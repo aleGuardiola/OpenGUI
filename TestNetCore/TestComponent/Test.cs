@@ -36,6 +36,20 @@ namespace TestNetCore
             Color = Color.Red;
 
             Background = new DrawableColor(Color.Blue);
+
+            var label = GetViewById<Label>("text");
+            label.Styles = new OpenGui.Styles.ViewStyleContainer()
+            {
+                Setters =
+                {
+                    new OpenGui.Styles.Set()
+                    {
+                        Property = "Text",
+                        Value = "Hola"
+                    }
+                }
+            };
+
         }
 
         public void Test_Click(object sender, OpenGui.Core.MouseEventArgs e)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using OpenGui.Animations.Xaml;
@@ -8,6 +9,7 @@ using OpenGui.Core;
 using OpenGui.Graphics;
 using OpenGui.Helpers;
 using OpenGui.MarkupExtensions;
+using OpenGui.Styles;
 using OpenGui.Values;
 using OpenTK;
 using SkiaSharp;
@@ -44,6 +46,24 @@ namespace OpenGui.Controls
         {
             get => _class;
             set => _class = value;
+        }
+
+        public StyleProvider StyleProvider
+        {
+            get => GetValue<StyleProvider>();
+            set => SetValue<StyleProvider>(value);
+        }
+
+        public ViewStyleContainer Styles
+        {
+            get => GetValue<ViewStyleContainer>();
+            set => SetValue<ViewStyleContainer>(value);
+        }
+
+        IEnumerable<Set> _setters;
+        protected IEnumerable<Set> Setters
+        {
+            get => _setters;
         }
 
         public object BindingContext
@@ -191,8 +211,11 @@ namespace OpenGui.Controls
 
         public View()
         {
+            
             SubscriptionPool = new SubscriptionPool();
             Parent = null;
+
+            SetValue<ViewStyleContainer>(nameof(Styles), ReactiveObject.LAYOUT_VALUE, new ViewStyleContainer());
 
             SetValue<float>(nameof(RelativeX), ReactiveObject.LAYOUT_VALUE, 0);
             SetValue<float>(nameof(RelativeY), ReactiveObject.LAYOUT_VALUE, 0);
@@ -227,6 +250,44 @@ namespace OpenGui.Controls
             SubscriptionPool.Add(GetObservable<VerticalAligment>(nameof(VerticalAligment)).Subscribe((v) => Parent?.ForceMeasure()));
             SubscriptionPool.Add(GetObservable<bool>(nameof(IsAnimating)).Subscribe(OnNextIsAnimating));
             SubscriptionPool.Add(GetObservable<Drawable>(nameof(Background)).Subscribe((next) => ForzeDraw()));
+            SubscriptionPool.Add(GetObservable<StyleProvider>(nameof(StyleProvider)).Subscribe(applyStyles));
+            SubscriptionPool.Add(GetObservable<ViewStyleContainer>(nameof(Styles)).Subscribe((next)=>applyStyles(null)));
+        }
+
+        private void applyStyles(StyleProvider styleProvider)
+        {
+            if (styleProvider == null)
+                styleProvider = new StyleProvider();
+
+            _setters = styleProvider.GetStyles(this);
+            foreach(var set in _setters)
+            {
+                SetStyleValue(set.Property, set.Value);
+            }
+        }
+
+        private void SetStyleValue(string property, string value)
+        {
+            var type = this.GetType();
+            var propertyInfo = type.GetProperty(property);
+            if (propertyInfo == null)
+                return;
+
+            var methods = type.GetMethods().Where(m=>m.Name == "SetValue").ToList();
+
+            var setValueMethod = type.GetMethod("SetValue");
+            setValueMethod = setValueMethod.MakeGenericMethod(propertyInfo.PropertyType);
+
+            setValueMethod.Invoke(this, new object[] { property, ReactiveObject.USER_VALUE, GetValueFromString(propertyInfo.PropertyType, value) });
+        }
+
+        private static object GetValueFromString(Type value, string str)
+        {
+            if (value.IsAssignableFrom(typeof(string)))
+                return str;
+
+            var converter = TypeDescriptor.GetConverter(value);
+            return converter.ConvertFromString(str);
         }
 
         protected virtual void ProcessInput(OpenTK.Input.KeyboardState keyboardState, OpenTK.Input.MouseState mouseState, OpenTK.Input.GamePadState gamePadState, OpenTK.Input.JoystickState joystickState)

@@ -1,6 +1,7 @@
 ﻿using OpenGui.Collection;
 using OpenGui.Core;
 using OpenGui.GUICore;
+using OpenGui.Styles;
 using OpenGui.Values;
 using OpenTK;
 using OpenTK.Input;
@@ -41,6 +42,14 @@ namespace OpenGui.Controls
             IsForceMeasure = true;
             GetObservable<float>(nameof(X)).Subscribe((val) => IsForceMeasure = true );
             GetObservable<float>(nameof(Y)).Subscribe((val) => IsForceMeasure = true );
+        }
+
+        public IEnumerable<Set> GetInheritedStyles()
+        {
+            if (Setters == null)
+                return new Set[0];
+
+            return Setters.Where(s => s.Inheritable);
         }
 
         public override void Check()

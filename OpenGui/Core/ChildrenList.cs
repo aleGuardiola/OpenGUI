@@ -1,5 +1,6 @@
 ﻿using OpenGui.Controls;
 using OpenGui.GUICore;
+using OpenGui.Styles;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -20,10 +21,17 @@ namespace OpenGui.Core
         public int Count => _views.Count;
 
         public bool IsReadOnly => false;
-               
+        
+        public ChildrenList(ViewContainer container, int maxItems = -1)
+        {
+            _container = container ?? throw new NullReferenceException(nameof(container));
+            _views = new List<View>();
+            _maxItems = maxItems;
+            _container.GetObservable<object>(nameof(View.BindingContext)).Subscribe(BindingContextChanged);           
+        }
 
         public void BindingContextChanged(object bindingContext)
-        {
+        { 
             CheckThread();
             for (int i = 0; i < _views.Count; i++)
             {
@@ -39,14 +47,6 @@ namespace OpenGui.Core
             {
                 _views[i].AttachWindow(window);
             }
-        }
-
-        public ChildrenList(ViewContainer container, int maxItems = -1)
-        {
-            _container = container ?? throw new NullReferenceException(nameof(container));
-            _views = new List<View>();
-            _maxItems = maxItems;
-            _container.GetObservable<object>(nameof(View.BindingContext)).Subscribe(BindingContextChanged);
         }
 
         public void Add(View item)

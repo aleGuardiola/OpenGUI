@@ -1,6 +1,6 @@
 ﻿<CoordinateLayout xmlns="https://github.com/aleGuardiola/OpenGUI">
 
-    <Label Id="text" Text="{Bind Path=Name}" Click="{Bind Path=Test_Click}" TextColor="{Bind Path=Color}"/>
+    <Label Id="text" Click="{Bind Path=Test_Click}" TextColor="{Bind Path=Color}"/>
 
     <Label Text="{Bind Path=Status}"  TextColor="{Bind Path=Color}" RelativeY="100"/>  
      
