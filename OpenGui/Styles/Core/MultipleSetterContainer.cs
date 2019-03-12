@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using OpenGui.Controls;
 using Portable.Xaml.Markup;
@@ -62,7 +63,7 @@ namespace OpenGui.Styles.Core
 
         public abstract string GetParentContainerKey(MultipleSetterContainer container);
 
-        public abstract string GetParentKey(ViewContainer parent);
+        public abstract IEnumerable<string> GetParentKey(ViewContainer parent);
 
         public override bool CanBeUsedByView(View view, SetterContainer container)
         {
@@ -79,9 +80,23 @@ namespace OpenGui.Styles.Core
             return GetParentContainerKey(multipleSetterContainer) + multipleSetterContainer.Container.GetSelector().GetContainerKey(multipleSetterContainer.Container).ToString();
         }
 
-        public override string GetViewKey(View view)
+        public override IEnumerable<string> GetViewKey(View view)
         {
-            return view.Parent == null ? "" : GetParentKey(view.Parent) + _viewSelector.GetViewKey(view);
+            if (view.Parent == null)
+                return new string[0];
+
+            var parentKeys = GetParentKey(view.Parent).ToArray();
+            var viewKeys = GetViewKey(view).ToArray();
+
+            var result = new string[parentKeys.Length * viewKeys.Length];
+
+            var index = 0;
+            for (int i = 0; i < parentKeys.Length; i++)            
+                for (int j = 0; j < viewKeys.Length; j++, index++)                
+                    result[index] = parentKeys[i] + viewKeys[j];
+
+
+            return result;
         }
     }
 

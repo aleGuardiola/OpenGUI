@@ -2,6 +2,7 @@
 using OpenGui.Styles.Core;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace OpenGui.Styles
@@ -29,9 +30,9 @@ namespace OpenGui.Styles
                 return "." + classContainer.Class;
             }
 
-            public override string GetViewKey(View view)
+            public override IEnumerable<string> GetViewKey(View view)
             {
-                return "." + view.Class;
+                return view.Class.Split(' ').Select(s => "." + s);
             }
         }
     }
@@ -65,9 +66,9 @@ namespace OpenGui.Styles
                 return "." + classContainer.Class;
             }
 
-            public override string GetParentKey(ViewContainer parent)
+            public override IEnumerable<string> GetParentKey(ViewContainer parent)
             {
-                return "." + parent.Class;
+                return parent.Class.Split(' ').Select(s => "." + s);
             }
         }
 

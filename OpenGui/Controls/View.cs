@@ -48,23 +48,17 @@ namespace OpenGui.Controls
             set => _class = value;
         }
 
-        public StyleProvider StyleProvider
-        {
-            get => GetValue<StyleProvider>();
-            set => SetValue<StyleProvider>(value);
-        }
+        //public ViewStyleContainer Styles
+        //{
+        //    get => GetValue<ViewStyleContainer>();
+        //    set => SetValue<ViewStyleContainer>(value);
+        //}
 
-        public ViewStyleContainer Styles
-        {
-            get => GetValue<ViewStyleContainer>();
-            set => SetValue<ViewStyleContainer>(value);
-        }
-
-        IEnumerable<Set> _setters;
-        protected IEnumerable<Set> Setters
-        {
-            get => _setters;
-        }
+        //IEnumerable<Set> _setters;
+        //protected IEnumerable<Set> Setters
+        //{
+        //    get => _setters;
+        //}
 
         public object BindingContext
         {
@@ -215,8 +209,6 @@ namespace OpenGui.Controls
             SubscriptionPool = new SubscriptionPool();
             Parent = null;
 
-            SetValue<ViewStyleContainer>(nameof(Styles), ReactiveObject.LAYOUT_VALUE, new ViewStyleContainer());
-
             SetValue<float>(nameof(RelativeX), ReactiveObject.LAYOUT_VALUE, 0);
             SetValue<float>(nameof(RelativeY), ReactiveObject.LAYOUT_VALUE, 0);
 
@@ -249,21 +241,7 @@ namespace OpenGui.Controls
             SubscriptionPool.Add(GetObservable<HorizontalAligment>(nameof(HorizontalAligment)).Subscribe((v) => Parent?.ForceMeasure()));
             SubscriptionPool.Add(GetObservable<VerticalAligment>(nameof(VerticalAligment)).Subscribe((v) => Parent?.ForceMeasure()));
             SubscriptionPool.Add(GetObservable<bool>(nameof(IsAnimating)).Subscribe(OnNextIsAnimating));
-            SubscriptionPool.Add(GetObservable<Drawable>(nameof(Background)).Subscribe((next) => ForzeDraw()));
-            SubscriptionPool.Add(GetObservable<StyleProvider>(nameof(StyleProvider)).Subscribe(applyStyles));
-            SubscriptionPool.Add(GetObservable<ViewStyleContainer>(nameof(Styles)).Subscribe((next)=>applyStyles(null)));
-        }
-
-        private void applyStyles(StyleProvider styleProvider)
-        {
-            if (styleProvider == null)
-                styleProvider = new StyleProvider();
-
-            _setters = styleProvider.GetStyles(this);
-            foreach(var set in _setters)
-            {
-                SetStyleValue(set.Property, set.Value);
-            }
+            SubscriptionPool.Add(GetObservable<Drawable>(nameof(Background)).Subscribe((next) => ForzeDraw()));            
         }
 
         private void SetStyleValue(string property, string value)

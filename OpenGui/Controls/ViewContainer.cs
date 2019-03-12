@@ -44,13 +44,13 @@ namespace OpenGui.Controls
             GetObservable<float>(nameof(Y)).Subscribe((val) => IsForceMeasure = true );
         }
 
-        public IEnumerable<Set> GetInheritedStyles()
-        {
-            if (Setters == null)
-                return new Set[0];
+        //public IEnumerable<Set> GetInheritedStyles()
+        //{
+        //    if (Setters == null)
+        //        return new Set[0];
 
-            return Setters.Where(s => s.Inheritable);
-        }
+        //    return Setters.Where(s => s.Inheritable);
+        //}
 
         public override void Check()
         {

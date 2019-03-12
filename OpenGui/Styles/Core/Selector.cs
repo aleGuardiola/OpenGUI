@@ -33,6 +33,6 @@ namespace OpenGui.Styles.Core
         /// </summary>
         /// <param name="view">The view.</param>
         /// <returns>Returns the key that a container has to has to be used by the view.</returns>
-        public abstract string GetViewKey(View view);
+        public abstract IEnumerable<string> GetViewKey(View view);
     }
 }
