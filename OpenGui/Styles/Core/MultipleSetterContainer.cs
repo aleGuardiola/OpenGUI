@@ -77,26 +77,15 @@ namespace OpenGui.Styles.Core
         public override string GetContainerKey(SetterContainer container)
         {
             var multipleSetterContainer = (MultipleSetterContainer)container;
-            return GetParentContainerKey(multipleSetterContainer) + multipleSetterContainer.Container.GetSelector().GetContainerKey(multipleSetterContainer.Container).ToString();
+            return GetParentContainerKey(multipleSetterContainer);
         }
 
         public override IEnumerable<string> GetViewKey(View view)
         {
             if (view.Parent == null)
                 return new string[0];
-
-            var parentKeys = GetParentKey(view.Parent).ToArray();
-            var viewKeys = GetViewKey(view).ToArray();
-
-            var result = new string[parentKeys.Length * viewKeys.Length];
-
-            var index = 0;
-            for (int i = 0; i < parentKeys.Length; i++)            
-                for (int j = 0; j < viewKeys.Length; j++, index++)                
-                    result[index] = parentKeys[i] + viewKeys[j];
-
-
-            return result;
+            
+            return GetParentKey(view.Parent);
         }
     }
 
