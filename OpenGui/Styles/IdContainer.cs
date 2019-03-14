@@ -9,7 +9,17 @@ namespace OpenGui.Styles
     public class IdContainer : SingleSetterContainer
     {
         public string Id { get; set; }
-        
+
+        public IdContainer()
+        {
+            Id = "";
+        }
+
+        public IdContainer(string id)
+        {
+            Id = id;
+        }
+
         public override Selector GetSelector()
         {
             return new IdSelector();
@@ -17,6 +27,8 @@ namespace OpenGui.Styles
 
         private class IdSelector : Selector
         {
+            public override string SelectorKey => "IdSelector";
+
             public override bool CanBeUsedByView(View view, SetterContainer container)
             {
                 var idContainer = (IdContainer)container;
@@ -44,6 +56,11 @@ namespace OpenGui.Styles
         {
 
         }
+        
+        public IdParentContainer(string id) : base(typeof(IdParentContainerSelector))
+        {
+            Id = id;
+        }
 
         public class IdParentContainerSelector : ParentSelector
         {
@@ -52,6 +69,8 @@ namespace OpenGui.Styles
             {
 
             }
+
+            public override string ParentSelectorKey => "IdParentSelector";
 
             public override bool CanBeUsedByParent(ViewContainer parent, MultipleSetterContainer container)
             {

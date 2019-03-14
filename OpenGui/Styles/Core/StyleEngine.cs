@@ -8,11 +8,13 @@ namespace OpenGui.Styles.Core
 {
     public class StyleEngine
     {
-        Dictionary<Type, SelectorIndex> _selectors;
+        Dictionary<string, SelectorIndex> _selectors;
+        Dictionary<Guid, View> _views;
 
         public StyleEngine()
         {
-            _selectors = new Dictionary<Type, SelectorIndex>();
+            _selectors = new Dictionary<string, SelectorIndex>();
+            _views = new Dictionary<Guid, View>();
         }
 
         public void AddDefinition(StyleDefinition definition)
@@ -25,8 +27,27 @@ namespace OpenGui.Styles.Core
 
                 UpdateSetters(selectorIndex, container);
             }
-        }
+        } 
 
+        public IEnumerable<Setter> GetSetters(View view)
+        {
+            List<Setter> result = new List<Setter>();
+            foreach(var selectorIndexKeyValue in _selectors)
+            {
+                var selectorIndex = selectorIndexKeyValue.Value;
+                var keys = selectorIndex.Selector.GetViewKey(view);
+                
+                foreach(var key in keys)
+                {
+                    Dictionary<string, Setter> setters;
+                    if (selectorIndex.Setters.TryGetValue(key, out setters))
+                        result.AddRange(setters.Values);
+                }                
+            }
+
+            return result;
+        }
+        
         private static void UpdateSetters(SelectorIndex selectorIndex, SetterContainer setterContainer)
         {
             var setters = GetSetters(selectorIndex, setterContainer);
@@ -64,13 +85,12 @@ namespace OpenGui.Styles.Core
 
         private SelectorIndex GetSelectorIndex(Selector selector)
         {
-            Type selectorType = selector.GetType();
             SelectorIndex result;
-            if (_selectors.TryGetValue(selectorType, out result))
+            if (_selectors.TryGetValue(selector.SelectorKey, out result))
                 return result;
 
             result = new SelectorIndex(selector);
-            _selectors.Add(selectorType, result);
+            _selectors.Add(selector.SelectorKey, result);
 
             return result;
         }
@@ -80,7 +100,7 @@ namespace OpenGui.Styles.Core
     internal class SelectorIndex
     {
         public Selector Selector { get; }
-        public Dictionary<string, Dictionary<string,  > > Setters { get; }
+        public Dictionary<string, Dictionary<string, Setter> > Setters { get; }
 
         public SelectorIndex(Selector selector)
         {

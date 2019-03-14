@@ -50,7 +50,7 @@ namespace OpenGui.Styles.Core
     /// <typeparam name="T">The type of the MultipleSetterContainer.</typeparam>
     /// <typeparam name="C">The type of the container that contains the MultipleSetterContainer.</typeparam>
     /// <typeparam name="Key">The type of the key of the container that contains MultipleSetterContainer.</typeparam>
-    public abstract class ParentSelector : Selector        
+    public abstract class ParentSelector : Selector
     {
         Selector _viewSelector;
 
@@ -58,6 +58,16 @@ namespace OpenGui.Styles.Core
         {
             _viewSelector = viewSelector;
         }
+
+        public override string SelectorKey
+        {
+            get
+            {
+               return ParentSelectorKey + _viewSelector.SelectorKey;
+            }
+        }
+
+        public abstract string ParentSelectorKey { get; }
 
         public abstract bool CanBeUsedByParent(ViewContainer parent, MultipleSetterContainer container);
 
@@ -77,15 +87,25 @@ namespace OpenGui.Styles.Core
         public override string GetContainerKey(SetterContainer container)
         {
             var multipleSetterContainer = (MultipleSetterContainer)container;
-            return GetParentContainerKey(multipleSetterContainer);
+            return GetParentContainerKey(multipleSetterContainer) + _viewSelector.GetContainerKey(multipleSetterContainer.Container);
         }
 
         public override IEnumerable<string> GetViewKey(View view)
         {
             if (view.Parent == null)
                 return new string[0];
-            
-            return GetParentKey(view.Parent);
+
+            var parentKeys = GetParentKey(view.Parent).ToArray();
+            var viewKeys = _viewSelector.GetViewKey(view).ToArray();
+
+            var result = new string[parentKeys.Length * viewKeys.Length];
+
+            int index = 0;
+            for (int i = 0; i < parentKeys.Length; i++)
+                for (int j = 0; j < viewKeys.Length; j++, index++)
+                    result[index] = parentKeys[i] + viewKeys[j];
+
+            return result;
         }
     }
 

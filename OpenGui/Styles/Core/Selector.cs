@@ -14,6 +14,11 @@ namespace OpenGui.Styles.Core
     public abstract class Selector
     {
         /// <summary>
+        /// Get the key that identify this selector
+        /// </summary>
+        public abstract string SelectorKey { get; }
+
+        /// <summary>
         /// Check if a view can use the styles in a gived container.
         /// </summary>
         /// <param name="view">The view to check.</param>

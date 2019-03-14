@@ -10,6 +10,16 @@ namespace OpenGui.Styles
     {
         public string Tag { get; set; }
 
+        public TagContainer()
+        {
+            Tag = "";
+        }
+
+        public TagContainer(string tag)
+        {
+            Tag = tag;
+        }
+
         public override Selector GetSelector()
         {
             return new TagSelector();
@@ -17,6 +27,8 @@ namespace OpenGui.Styles
 
         private class TagSelector : Selector
         {
+            public override string SelectorKey => "TagSelector";
+
             public override bool CanBeUsedByView(View view, SetterContainer container)
             {
                 return view.GetType().Name == (container as TagContainer).Tag;
@@ -50,6 +62,8 @@ namespace OpenGui.Styles
             {
 
             }
+
+            public override string ParentSelectorKey => "ParentClassSelector";
 
             public override bool CanBeUsedByParent(ViewContainer parent, MultipleSetterContainer container)
             {

@@ -1,6 +1,7 @@
 ﻿using OpenGui.Controls;
 using OpenGui.Core;
 using OpenGui.OpenGLHelpers;
+using OpenGui.Styles.Core;
 using OpenTK;
 using OpenTK.Graphics.ES20;
 using OpenTK.Platform;
@@ -32,6 +33,11 @@ namespace OpenGui.GUICore
 
         //z position where objects dimensions are seen as pixels in the screen
         private float _depthZ;
+
+        /// <summary>
+        /// The style engine used to apply styles to views.
+        /// </summary>
+        public StyleEngine StyleEngine { get; }
 
         private Thread _uiThread;
         private ConcurrentQueue<Action> _actionsQueue;
@@ -112,6 +118,7 @@ namespace OpenGui.GUICore
             _gameWindow.Resize += _gameWindow_Resize;
             _actionsQueue = new ConcurrentQueue<Action>();
             _uiThread = Thread.CurrentThread;
+            StyleEngine = new StyleEngine();
         }
 
         private void _gameWindow_UpdateFrame(object sender, FrameEventArgs e)

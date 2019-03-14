@@ -3,10 +3,12 @@ using OpenGui.Animations.Xaml;
 using OpenGui.App;
 using OpenGui.Controls;
 using OpenGui.Graphics;
+using OpenGui.Styles;
 using OpenGui.Values;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -37,7 +39,22 @@ namespace TestNetCore
 
             Background = new DrawableColor(Color.Blue);
 
-            //var label = GetViewById<Label>("text");
+            Window.StyleEngine.AddDefinition(new StyleDefinition() {
+                Containers =
+                {
+                    new IdContainer("text")
+                    {
+                        Setters =
+                        {
+                            new Setter("Text", "Hola")
+                        }
+                    }
+                }
+            });
+
+            var label = GetViewById<Label>("text");
+            var setters = Window.StyleEngine.GetSetters(label).ToList();
+
             //label.Styles = new OpenGui.Styles.ViewStyleContainer()
             //{
             //    Setters =

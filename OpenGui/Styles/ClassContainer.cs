@@ -12,6 +12,16 @@ namespace OpenGui.Styles
     {
         public string Class { get; set; }
 
+        public ClassContainer()
+        {
+            Class = "";
+        }
+
+        public ClassContainer(string class_)
+        {
+            Class = class_;
+        }
+
         public override Selector GetSelector()
         {
             return new ClassSelector();
@@ -19,6 +29,8 @@ namespace OpenGui.Styles
 
         private class ClassSelector : Selector
         {
+            public override string SelectorKey => "ClassSelector";
+
             public override bool CanBeUsedByView(View view, SetterContainer container)
             {
                 var classContainer = (ClassContainer)container;
@@ -42,9 +54,14 @@ namespace OpenGui.Styles
     {
         public string Class { get; set; }
 
+        public ClassParentContainer(string class_) : base(typeof(ClassParentContainerSelector))
+        {
+            Class = class_;
+        }
+
         public ClassParentContainer() : base(typeof(ClassParentContainerSelector))
         {
-
+            Class = "";
         }
 
         public class ClassParentContainerSelector : ParentSelector
@@ -54,6 +71,8 @@ namespace OpenGui.Styles
             {
 
             }
+
+            public override string ParentSelectorKey => "classParentSelector";
 
             public override bool CanBeUsedByParent(ViewContainer parent, MultipleSetterContainer container)
             {

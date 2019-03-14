@@ -11,6 +11,7 @@ namespace OpenGui.Styles
     [ContentPropertyAttribute("Value")]
     public class Setter
     {
+
         /// <summary>
         /// The property to set the value.
         /// </summary>
@@ -29,6 +30,15 @@ namespace OpenGui.Styles
         public Setter()
         {
             IsInheritable = false;
+            Property = "";
+            Value = "";
+        }
+        
+        public Setter(string property, string value, bool isInheritable = false)
+        {
+            Property = property;
+            Value = value;
+            IsInheritable = isInheritable;
         }
 
     }
