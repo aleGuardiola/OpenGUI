@@ -39,21 +39,8 @@ namespace TestNetCore
 
             Background = new DrawableColor(Color.Blue);
 
-            Window.StyleEngine.AddDefinition(new StyleDefinition() {
-                Containers =
-                {
-                    new IdContainer("text")
-                    {
-                        Setters =
-                        {
-                            new Setter("Text", "Hola")
-                        }
-                    }
-                }
-            });
-
             var label = GetViewById<Label>("text");
-            var setters = Window.StyleEngine.GetSetters(label).ToList();
+            //var setters = Window.StyleEngine.GetSetters(label).ToList();
 
             //label.Styles = new OpenGui.Styles.ViewStyleContainer()
             //{

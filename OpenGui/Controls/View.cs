@@ -47,18 +47,18 @@ namespace OpenGui.Controls
             get => _class;
             set => _class = value;
         }
+        
+        public IList<Setter> Styles
+        {
+            get => GetValue<IList<Setter>>();
+            set => SetValue(value);
+        }
 
-        //public ViewStyleContainer Styles
-        //{
-        //    get => GetValue<ViewStyleContainer>();
-        //    set => SetValue<ViewStyleContainer>(value);
-        //}
-
-        //IEnumerable<Set> _setters;
-        //protected IEnumerable<Set> Setters
-        //{
-        //    get => _setters;
-        //}
+        IEnumerable<Setter> _setters;
+        protected IEnumerable<Setter> Setters
+        {
+            get => _setters;
+        }
 
         public object BindingContext
         {
@@ -209,31 +209,33 @@ namespace OpenGui.Controls
             SubscriptionPool = new SubscriptionPool();
             Parent = null;
 
-            SetValue<float>(nameof(RelativeX), ReactiveObject.LAYOUT_VALUE, 0);
-            SetValue<float>(nameof(RelativeY), ReactiveObject.LAYOUT_VALUE, 0);
+            SetValue<float>(nameof(RelativeX), ReactiveObject.SYSTEM_VALUE, 0);
+            SetValue<float>(nameof(RelativeY), ReactiveObject.SYSTEM_VALUE, 0);
 
-            SetValue<float>(nameof(MarginBottom), ReactiveObject.LAYOUT_VALUE, 0);
-            SetValue<float>(nameof(MarginTop), ReactiveObject.LAYOUT_VALUE, 0);
-            SetValue<float>(nameof(MarginRight), ReactiveObject.LAYOUT_VALUE, 0);
-            SetValue<float>(nameof(MarginLeft), ReactiveObject.LAYOUT_VALUE, 0);
+            SetValue<float>(nameof(MarginBottom), ReactiveObject.SYSTEM_VALUE, 0);
+            SetValue<float>(nameof(MarginTop), ReactiveObject.SYSTEM_VALUE, 0);
+            SetValue<float>(nameof(MarginRight), ReactiveObject.SYSTEM_VALUE, 0);
+            SetValue<float>(nameof(MarginLeft), ReactiveObject.SYSTEM_VALUE, 0);
             
-            SetValue<float>(nameof(PaddingBottom), ReactiveObject.LAYOUT_VALUE, 0);
-            SetValue<float>(nameof(PaddingTop), ReactiveObject.LAYOUT_VALUE, 0);
-            SetValue<float>(nameof(PaddingRight), ReactiveObject.LAYOUT_VALUE, 0);
-            SetValue<float>(nameof(PaddingLeft), ReactiveObject.LAYOUT_VALUE, 0);
+            SetValue<float>(nameof(PaddingBottom), ReactiveObject.SYSTEM_VALUE, 0);
+            SetValue<float>(nameof(PaddingTop), ReactiveObject.SYSTEM_VALUE, 0);
+            SetValue<float>(nameof(PaddingRight), ReactiveObject.SYSTEM_VALUE, 0);
+            SetValue<float>(nameof(PaddingLeft), ReactiveObject.SYSTEM_VALUE, 0);
 
-            SetValue<float>(nameof(CalculatedWidth), ReactiveObject.LAYOUT_VALUE, 0);
-            SetValue<float>(nameof(CalculatedHeight), ReactiveObject.LAYOUT_VALUE, 0);
+            SetValue<float>(nameof(CalculatedWidth), ReactiveObject.SYSTEM_VALUE, 0);
+            SetValue<float>(nameof(CalculatedHeight), ReactiveObject.SYSTEM_VALUE, 0);
 
-            SetValue<Drawable>(nameof(Background), ReactiveObject.LAYOUT_VALUE, new DrawableColor(System.Drawing.Color.Transparent));
+            SetValue<Drawable>(nameof(Background), ReactiveObject.SYSTEM_VALUE, new DrawableColor(System.Drawing.Color.Transparent));
 
-            SetValue<Align>(nameof(Align), ReactiveObject.LAYOUT_VALUE, Align.Center);
+            SetValue<Align>(nameof(Align), ReactiveObject.SYSTEM_VALUE, Align.Center);
 
-            SetValue<VerticalAligment>(nameof(VerticalAligment), ReactiveObject.LAYOUT_VALUE,  VerticalAligment.Center );
-            SetValue<HorizontalAligment>(nameof(HorizontalAligment), ReactiveObject.LAYOUT_VALUE, HorizontalAligment.Center );
+            SetValue<VerticalAligment>(nameof(VerticalAligment), ReactiveObject.SYSTEM_VALUE,  VerticalAligment.Center );
+            SetValue<HorizontalAligment>(nameof(HorizontalAligment), ReactiveObject.SYSTEM_VALUE, HorizontalAligment.Center );
 
-            SetValue<bool>(nameof(IsAnimating), ReactiveObject.LAYOUT_VALUE, false);
+            SetValue<bool>(nameof(IsAnimating), ReactiveObject.SYSTEM_VALUE, false);
 
+            SetValue<IList<Setter>>(nameof(Styles), ReactiveObject.SYSTEM_VALUE, new List<Setter>(0));
+            
             AttachedToWindow += View_AttachedToWindow;
 
             SubscriptionPool.Add(GetObservable<float>(nameof(Width)).Subscribe((v) => Parent?.ForceMeasure()));
@@ -241,7 +243,11 @@ namespace OpenGui.Controls
             SubscriptionPool.Add(GetObservable<HorizontalAligment>(nameof(HorizontalAligment)).Subscribe((v) => Parent?.ForceMeasure()));
             SubscriptionPool.Add(GetObservable<VerticalAligment>(nameof(VerticalAligment)).Subscribe((v) => Parent?.ForceMeasure()));
             SubscriptionPool.Add(GetObservable<bool>(nameof(IsAnimating)).Subscribe(OnNextIsAnimating));
-            SubscriptionPool.Add(GetObservable<Drawable>(nameof(Background)).Subscribe((next) => ForzeDraw()));            
+            SubscriptionPool.Add(GetObservable<Drawable>(nameof(Background)).Subscribe((next) => ForzeDraw()));
+
+            SubscriptionPool.Add(GetObservable<string>(nameof(Id)).Subscribe((next) => applyStyles()));
+            SubscriptionPool.Add(GetObservable<string>(nameof(Class)).Subscribe((next) => applyStyles()));
+
         }
 
         private void SetStyleValue(string property, string value)
@@ -335,8 +341,55 @@ namespace OpenGui.Controls
         {
             if (IsAnimating && _animation != null && !_animation.IsStop())
                 Window.AddFrameRunner(_animation);
+                        
+            applyStyles();
         }
 
+        private void applyStyles()
+        {
+            if (Window == null)
+                return;
+
+            IEnumerable<Setter> setters = Window.StyleEngine.GetSetters(this).Concat(Styles);
+
+            if (Parent != null && Parent._setters != null)
+                setters.Concat(Parent.Setters.Where(s => s.IsInheritable));
+
+            _setters = setters;
+            
+            foreach (var setter in setters)
+            {
+                var property = this.GetType().GetProperty(setter.Property);
+                if(property == null)
+                {
+                    return;
+                }
+
+                if (property.PropertyType.IsAssignableFrom(typeof(string)))
+                    SetValue<string>(setter.Property, ReactiveObject.STYLE_VALUE, setter.Value);
+                else
+                {
+                    var converter = TypeDescriptor.GetConverter(property.PropertyType);
+                    if (converter == null)
+                    {
+                        return;
+                    }
+                       
+                    if (!converter.CanConvertFrom(typeof(string)))
+                    {
+                        return;
+                    }
+
+                    var value = converter.ConvertFrom(setter.Value);
+                    if(value == null)
+                    {
+                        return;
+                    }
+
+                    SetValue<object>(setter.Property, ReactiveObject.STYLE_VALUE, setter.Value);                    
+                }
+            }
+        }
 
         public virtual bool TryGetViewById(string id, out View view)
         {

@@ -2,6 +2,10 @@
 
     <Label Id="text" Class="redText boldText"  Click="{Bind Path=Test_Click}" TextColor="{Bind Path=Color}"/>
 
-    <Label Text="{Bind Path=Status}"  TextColor="{Bind Path=Color}" RelativeY="100"/>  
-     
+    <Label TextColor="{Bind Path=Color}" RelativeY="100">
+        <Label.Styles>
+            <Setter Property="Text">Hola</Setter>           
+        </Label.Styles>
+    </Label>
+
 </CoordinateLayout> 

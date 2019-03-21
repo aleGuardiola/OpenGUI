@@ -141,22 +141,22 @@ namespace OpenGui.Controls
             _transformableObject = new ViewTransformableObject(modelProvider);
             _uniqueId = Guid.NewGuid();
 
-            SetValue<float>(nameof(Width), ReactiveObject.LAYOUT_VALUE, (int)WidthOptions.Auto);
-            SetValue<float>(nameof(Height), ReactiveObject.LAYOUT_VALUE, (int)HeightOptions.Auto);
-            SetValue<float>(nameof(Depth), ReactiveObject.LAYOUT_VALUE, 1);
-            SetValue<float>(nameof(MinWidth), ReactiveObject.LAYOUT_VALUE, 25);
-            SetValue<float>(nameof(MinHeight), ReactiveObject.LAYOUT_VALUE, 25);
+            SetValue<float>(nameof(Width), ReactiveObject.SYSTEM_VALUE, (int)WidthOptions.Auto);
+            SetValue<float>(nameof(Height), ReactiveObject.SYSTEM_VALUE, (int)HeightOptions.Auto);
+            SetValue<float>(nameof(Depth), ReactiveObject.SYSTEM_VALUE, 1);
+            SetValue<float>(nameof(MinWidth), ReactiveObject.SYSTEM_VALUE, 25);
+            SetValue<float>(nameof(MinHeight), ReactiveObject.SYSTEM_VALUE, 25);
 
-            SetValue<float>(nameof(X), ReactiveObject.LAYOUT_VALUE, 0);
-            SetValue<float>(nameof(Y), ReactiveObject.LAYOUT_VALUE, 0);
-            SetValue<float>(nameof(Z), ReactiveObject.LAYOUT_VALUE, 0);
+            SetValue<float>(nameof(X), ReactiveObject.SYSTEM_VALUE, 0);
+            SetValue<float>(nameof(Y), ReactiveObject.SYSTEM_VALUE, 0);
+            SetValue<float>(nameof(Z), ReactiveObject.SYSTEM_VALUE, 0);
 
-            SetValue<float>(nameof(Rotation), ReactiveObject.LAYOUT_VALUE, 0);
-            SetValue<float>(nameof(RotationY), ReactiveObject.LAYOUT_VALUE, 0);
-            SetValue<float>(nameof(RotationZ), ReactiveObject.LAYOUT_VALUE, 0);
+            SetValue<float>(nameof(Rotation), ReactiveObject.SYSTEM_VALUE, 0);
+            SetValue<float>(nameof(RotationY), ReactiveObject.SYSTEM_VALUE, 0);
+            SetValue<float>(nameof(RotationZ), ReactiveObject.SYSTEM_VALUE, 0);
 
-            SetValue<float>(nameof(ScaleX), ReactiveObject.LAYOUT_VALUE, 1f);
-            SetValue<float>(nameof(ScaleY), ReactiveObject.LAYOUT_VALUE, 1f);
+            SetValue<float>(nameof(ScaleX), ReactiveObject.SYSTEM_VALUE, 1f);
+            SetValue<float>(nameof(ScaleY), ReactiveObject.SYSTEM_VALUE, 1f);
         }
 
         public virtual void AttachWindow(Window window)

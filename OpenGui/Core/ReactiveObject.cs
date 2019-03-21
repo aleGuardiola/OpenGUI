@@ -12,9 +12,10 @@ namespace OpenGui.Core
     public class ReactiveObject : IPropertyChangeObservable
     {
         public const int SYSTEM_VALUE = 0;
-        public const int LAYOUT_VALUE = 1;
-        public const int USER_VALUE = 2;
-        public const int ANIMATION_VALUE = 3;
+        public const int STYLE_VALUE = 1;
+        public const int LAYOUT_VALUE = 2;
+        public const int USER_VALUE = 3;
+        public const int ANIMATION_VALUE = 4;
         
         Dictionary<string, Property> _properties;
         private Thread _threadWhereCreated;
@@ -216,7 +217,7 @@ namespace OpenGui.Core
                 Change?.Invoke(this, null);
             }
 
-            public object[] values = new object[4];
+            public object[] values = new object[5];
 
             public object GetPriorityValue()
             {

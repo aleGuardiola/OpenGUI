@@ -8,6 +8,5 @@ namespace TestNetCore
         {
             new TestApp().Run(new GameWindow(800, 600));
         }
-
     }
 }

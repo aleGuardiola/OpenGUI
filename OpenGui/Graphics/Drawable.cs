@@ -1,6 +1,9 @@
 ﻿using SkiaSharp;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Globalization;
 using System.Text;
 
 namespace OpenGui.Graphics
@@ -18,4 +21,19 @@ namespace OpenGui.Graphics
         /// <param name="canvas">The canvas to draw</param>
         public abstract void Draw(int width, int height, SKCanvas canvas);        
     }
+
+    public class DrawableValueConverter : TypeConverter
+    {
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+        {
+            return sourceType.Equals(typeof(string));
+        }
+
+        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+        {
+            return base.ConvertFrom(context, culture, value);           
+        }
+
+    }
+
 }

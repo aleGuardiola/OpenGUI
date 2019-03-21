@@ -1,4 +1,5 @@
 ﻿using OpenGui.Controls;
+using OpenGui.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Reactive.Subjects;
@@ -27,7 +28,7 @@ namespace OpenGui.Styles.Core
 
                 UpdateSetters(selectorIndex, container);
             }
-        } 
+        }
 
         public IEnumerable<Setter> GetSetters(View view)
         {
@@ -51,23 +52,35 @@ namespace OpenGui.Styles.Core
         private static void UpdateSetters(SelectorIndex selectorIndex, SetterContainer setterContainer)
         {
             var setters = GetSetters(selectorIndex, setterContainer);
+            bool changed = false;
 
             foreach(var setter in setterContainer.GetSetters())
             {
-                UpdateSetter(setters, setter);
+                if (UpdateSetter(setters, setter))
+                    changed = true;
             }
+
+            if (changed)
+                selectorIndex.OnSelectorChange(setterContainer.GetSelector().SelectorKey);
+
         }
 
-        private static void UpdateSetter(Dictionary<string, Setter> map, Setter setter)
+        private static bool UpdateSetter(Dictionary<string, Setter> map, Setter setter)
         {
             Setter mapSetter;
             if(!map.TryGetValue(setter.Property, out mapSetter))
             {
                 map.Add(setter.Property, setter);
-                return;
+                return true;
             }
 
-            mapSetter.Value = setter.Value;
+            if(mapSetter.Value != setter.Value)
+            {
+                mapSetter.Value = setter.Value;
+                return true;
+            }
+
+            return false;
         }
 
         private static Dictionary<string, Setter> GetSetters(SelectorIndex selectorIndex, SetterContainer setterContainer)
@@ -101,6 +114,12 @@ namespace OpenGui.Styles.Core
     {
         public Selector Selector { get; }
         public Dictionary<string, Dictionary<string, Setter> > Setters { get; }
+
+        public event EventHandler<GenericEventArgs<string>> SelectorChange; 
+        public void OnSelectorChange(string selector)
+        {
+            SelectorChange?.Invoke(this, new GenericEventArgs<string>(selector));
+        }
 
         public SelectorIndex(Selector selector)
         {

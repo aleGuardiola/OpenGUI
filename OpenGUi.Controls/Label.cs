@@ -74,17 +74,17 @@ namespace OpenGui.Controls
 
         public Label()
         {
-            SetValue<string>(nameof(Text), ReactiveObject.LAYOUT_VALUE, "");
-            SetValue<Color>(nameof(TextColor), ReactiveObject.LAYOUT_VALUE, Color.Black);
-            SetValue<float>(nameof(TextSize), ReactiveObject.LAYOUT_VALUE, 30f);
-            SetValue<TextAlign>(nameof(TextAlign), ReactiveObject.LAYOUT_VALUE, TextAlign.Left);
+            SetValue<string>(nameof(Text), ReactiveObject.SYSTEM_VALUE, "");
+            SetValue<Color>(nameof(TextColor), ReactiveObject.SYSTEM_VALUE, Color.Black);
+            SetValue<float>(nameof(TextSize), ReactiveObject.SYSTEM_VALUE, 30f);
+            SetValue<TextAlign>(nameof(TextAlign), ReactiveObject.SYSTEM_VALUE, TextAlign.Left);
 
-            SetValue<float>(nameof(TextScale), ReactiveObject.LAYOUT_VALUE, 1);
-            SetValue<bool>(nameof(IsTextVertical), ReactiveObject.LAYOUT_VALUE, false);
-            SetValue<Font>(nameof(Font), ReactiveObject.LAYOUT_VALUE, new FamilyFont("Normal"));
-            SetValue<FontStyle>(nameof(FontStyle), ReactiveObject.LAYOUT_VALUE, FontStyle.Oblique);
-            SetValue<int>(nameof(FontWeight), ReactiveObject.LAYOUT_VALUE, 0);
-            SetValue<float>(nameof(TextSkew), ReactiveObject.LAYOUT_VALUE, 0f);
+            SetValue<float>(nameof(TextScale), ReactiveObject.SYSTEM_VALUE, 1);
+            SetValue<bool>(nameof(IsTextVertical), ReactiveObject.SYSTEM_VALUE, false);
+            SetValue<Font>(nameof(Font), ReactiveObject.SYSTEM_VALUE, new FamilyFont("Normal"));
+            SetValue<FontStyle>(nameof(FontStyle), ReactiveObject.SYSTEM_VALUE, FontStyle.Oblique);
+            SetValue<int>(nameof(FontWeight), ReactiveObject.SYSTEM_VALUE, 0);
+            SetValue<float>(nameof(TextSkew), ReactiveObject.SYSTEM_VALUE, 0f);
 
             //force to draw when any of this changed
             SubscriptionPool.Add(GetObservable<string>(nameof(Text)).Subscribe((next) => { ForzeDraw(); Parent?.ForceMeasure(); }));

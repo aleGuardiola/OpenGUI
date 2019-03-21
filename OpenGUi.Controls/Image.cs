@@ -40,8 +40,8 @@ namespace OpenGui.Controls
             subscriptionPool.Add( GetObservable<ImageSource>(nameof(Source)).Subscribe(imageSourceChanged) );
             subscriptionPool.Add(GetObservable<ImageMode>(nameof(ImageMode)).Subscribe((mode) => ForzeDraw()));
             
-            SetValue<bool>(nameof(IsLoading), ReactiveObject.LAYOUT_VALUE, false);
-            SetValue<ImageMode>(nameof(ImageMode), ReactiveObject.LAYOUT_VALUE, ImageMode.Fit);
+            SetValue<bool>(nameof(IsLoading), ReactiveObject.SYSTEM_VALUE, false);
+            SetValue<ImageMode>(nameof(ImageMode), ReactiveObject.SYSTEM_VALUE, ImageMode.Fit);
         }
 
         private void imageSourceChanged(ImageSource source)
